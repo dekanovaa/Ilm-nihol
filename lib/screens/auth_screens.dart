@@ -16,11 +16,6 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashState extends State<SplashScreen> with TickerProviderStateMixin {
   late final AnimationController _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400));
-  late final Animation<double> _scale = Tween(begin: 0.65, end: 1.0)
-      .animate(CurvedAnimation(parent: _ctrl, curve: Curves.elasticOut));
-  late final Animation<double> _fade = Tween(begin: 0.0, end: 1.0)
-      .animate(CurvedAnimation(parent: _ctrl, curve: const Interval(0, 0.4)));
-
   @override
   void initState() {
     super.initState();
@@ -28,47 +23,130 @@ class _SplashState extends State<SplashScreen> with TickerProviderStateMixin {
     Future.delayed(const Duration(milliseconds: 2300), () {
       if (!mounted) return;
       final p = context.read<AppProvider>();
-      Navigator.pushReplacement(context, MaterialPageRoute(
-          builder: (_) => p.isLoggedIn ? const MainScreen() : const LoginScreen()));
+      if (p.isLoggedIn) {
+        if (p.hasPin) {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const PinLockScreen()));
+        } else {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const PinSetupScreen()));
+        }
+      } else {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+      }
     });
   }
-
   @override
   void dispose() { _ctrl.dispose(); super.dispose(); }
-
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
     return Scaffold(
       backgroundColor: c.background,
-      body: Center(
-        child: AnimatedBuilder(
-          animation: _ctrl,
-          builder: (_, __) => Opacity(
-            opacity: _fade.value,
-            child: Transform.scale(
-              scale: _scale.value,
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-                Container(
-                  width: 108, height: 108,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(colors: [c.primaryLight, c.primaryDark],
-                        begin: Alignment.topLeft, end: Alignment.bottomRight),
-                    borderRadius: BorderRadius.circular(32),
-                    boxShadow: [BoxShadow(color: c.primary.withValues(alpha: 0.4), blurRadius: 40, offset: const Offset(0, 14))],
-                  ),
-                  child: Center(child: AppIcon(AppIconData.leaf, size: 54, color: Colors.white)),
-                ),
-                const SizedBox(height: 22),
-                Text('Ilmnihol', style: GoogleFonts.sora(fontSize: 44, fontWeight: FontWeight.w900,
-                    color: c.textPrimary, letterSpacing: -1.2)),
-                const SizedBox(height: 8),
-                Text("O'simliklar dunyosini kashf eting",
-                    style: GoogleFonts.nunito(fontSize: 15, color: c.primary, fontWeight: FontWeight.w600)),
-              ]),
-            ),
+      body: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Container(width: 100, height: 100, decoration: BoxDecoration(gradient: LinearGradient(colors: [c.primaryLight, c.primaryDark]), borderRadius: BorderRadius.circular(28)), child: Center(child: AppIcon(AppIconData.leaf, size: 50, color: Colors.white))),
+        const SizedBox(height: 20),
+        Text('Ilmnihol', style: GoogleFonts.sora(fontSize: 40, fontWeight: FontWeight.w900, color: c.textPrimary)),
+      ])),
+    );
+  }
+}
+
+// ── PIN SETUP ─────────────────────────────────────────────────────────────
+class PinSetupScreen extends StatefulWidget {
+  const PinSetupScreen({super.key});
+  @override
+  State<PinSetupScreen> createState() => _PinSetupState();
+}
+
+class _PinSetupState extends State<PinSetupScreen> {
+  final _pc = TextEditingController();
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Scaffold(
+      backgroundColor: c.background,
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          const Text('🛡️', style: TextStyle(fontSize: 60)),
+          const SizedBox(height: 20),
+          Text("Kirish paroli yaratish", style: GoogleFonts.sora(fontSize: 22, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 10),
+          Text("Ilovaga tezroq kirish uchun 4 raqamli parol o'rnating", style: GoogleFonts.nunito(color: c.textMuted), textAlign: TextAlign.center),
+          const SizedBox(height: 40),
+          TextField(
+            controller: _pc,
+            keyboardType: TextInputType.number,
+            maxLength: 4,
+            obscureText: true,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.sora(fontSize: 32, fontWeight: FontWeight.w800, letterSpacing: 20),
+            decoration: InputDecoration(counterText: "", border: OutlineInputBorder(borderRadius: BorderRadius.circular(16))),
           ),
-        ),
+          const SizedBox(height: 30),
+          SizedBox(width: double.infinity, height: 55, child: ElevatedButton(onPressed: () {
+            if (_pc.text.length == 4) {
+              context.read<AppProvider>().setPin(_pc.text);
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainScreen()));
+            }
+          }, child: const Text("Saqlash"))),
+        ]),
+      ),
+    );
+  }
+}
+
+// ── PIN LOCK ──────────────────────────────────────────────────────────────
+class PinLockScreen extends StatefulWidget {
+  const PinLockScreen({super.key});
+  @override
+  State<PinLockScreen> createState() => _PinLockState();
+}
+
+class _PinLockState extends State<PinLockScreen> {
+  final _pc = TextEditingController();
+  String? _err;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final user = context.watch<AppProvider>().currentUser;
+
+    return Scaffold(
+      backgroundColor: c.background,
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          const Text('🌿', style: TextStyle(fontSize: 60)),
+          const SizedBox(height: 20),
+          Text("Xush kelibsiz, ${user?.firstName ?? ''}", style: GoogleFonts.sora(fontSize: 22, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 10),
+          Text("Ilovaga kirish uchun parolingizni kiriting", style: GoogleFonts.nunito(color: c.textMuted)),
+          const SizedBox(height: 40),
+          TextField(
+            controller: _pc,
+            keyboardType: TextInputType.number,
+            maxLength: 4,
+            obscureText: true,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.sora(fontSize: 32, fontWeight: FontWeight.w800, letterSpacing: 20),
+            decoration: InputDecoration(counterText: "", border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)), errorText: _err),
+            onChanged: (v) {
+              if (v.length == 4) {
+                if (context.read<AppProvider>().verifyPin(v)) {
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainScreen()));
+                } else {
+                  setState(() => _err = "Parol noto'g'ri");
+                  _pc.clear();
+                }
+              }
+            },
+          ),
+          const SizedBox(height: 20),
+          TextButton(onPressed: () {
+             context.read<AppProvider>().logout();
+             Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+          }, child: Text("Boshqa hisobga o'tish", style: GoogleFonts.nunito(color: c.primary, fontWeight: FontWeight.w700))),
+        ]),
       ),
     );
   }
@@ -87,18 +165,21 @@ class _LoginState extends State<LoginScreen> {
   final _pc = TextEditingController();
   bool _hide = true, _loading = false;
 
-  @override
-  void dispose() { _ec.dispose(); _pc.dispose(); super.dispose(); }
-
   Future<void> _login() async {
     if (!_fk.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
-      await context.read<AppProvider>().login(_ec.text.trim(), _pc.text);
-      if (mounted) Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainScreen()));
+      final p = context.read<AppProvider>();
+      await p.login(_ec.text.trim(), _pc.text);
+      if (mounted) {
+        if (p.hasPin) {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainScreen()));
+        } else {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const PinSetupScreen()));
+        }
+      }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AuthErrorHandler.getErrorMessage(e)), backgroundColor: context.colors.errorRed));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AuthErrorHandler.getErrorMessage(e)), backgroundColor: context.colors.errorRed));
     } finally { if (mounted) setState(() => _loading = false); }
   }
 
@@ -107,103 +188,23 @@ class _LoginState extends State<LoginScreen> {
     final c = context.colors;
     return Scaffold(
       backgroundColor: c.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _fk,
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const SizedBox(height: 20),
-              // Logo
-              Center(
-                child: Column(children: [
-                  Container(
-                    width: 72, height: 72,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(colors: [c.primaryLight, c.primaryDark],
-                          begin: Alignment.topLeft, end: Alignment.bottomRight),
-                      borderRadius: BorderRadius.circular(22),
-                      boxShadow: [BoxShadow(color: c.primary.withValues(alpha: 0.35), blurRadius: 20, offset: const Offset(0, 8))],
-                    ),
-                    child: Center(child: AppIcon(AppIconData.leaf, size: 38, color: Colors.white)),
-                  ),
-                  const SizedBox(height: 12),
-                  Text('Ilmnihol', style: GoogleFonts.sora(fontSize: 26, fontWeight: FontWeight.w900, color: c.textPrimary, letterSpacing: -0.5)),
-                  const SizedBox(height: 3),
-                  Text("Botanika o'quv platformasi", style: GoogleFonts.nunito(fontSize: 13, color: c.textMuted, fontWeight: FontWeight.w500)),
-                ]),
-              ),
-              const SizedBox(height: 34),
-              Text('Kirish', style: Theme.of(context).textTheme.displaySmall),
-              const SizedBox(height: 5),
-              Text('Hisobingizga kiring', style: Theme.of(context).textTheme.bodyMedium),
-              const SizedBox(height: 26),
-              _Lbl('Email manzil'),
-              const SizedBox(height: 7),
-              TextFormField(
-                controller: _ec, keyboardType: TextInputType.emailAddress,
-                style: GoogleFonts.nunito(color: c.textPrimary, fontWeight: FontWeight.w600),
-                decoration: InputDecoration(
-                  hintText: 'example@email.com',
-                  prefixIcon: Padding(padding: const EdgeInsets.all(12), child: AppIcon(AppIconData.email, size: 18, color: c.textMuted)),
-                ),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Email kiriting';
-                  if (!RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) return "Format noto'g'ri";
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              _Lbl('Parol'),
-              const SizedBox(height: 7),
-              TextFormField(
-                controller: _pc, obscureText: _hide,
-                style: GoogleFonts.nunito(color: c.textPrimary, fontWeight: FontWeight.w600),
-                decoration: InputDecoration(
-                  hintText: 'Kamida 6 ta belgi',
-                  prefixIcon: Padding(padding: const EdgeInsets.all(12), child: AppIcon(AppIconData.lock, size: 18, color: c.textMuted)),
-                  suffixIcon: IconButton(
-                    icon: AppIcon(_hide ? AppIconData.info : AppIconData.check, size: 18, color: c.textMuted),
-                    onPressed: () => setState(() => _hide = !_hide),
-                  ),
-                ),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Parol kiriting';
-                  if (v.length < 6) return 'Kamida 6 ta belgi';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 30),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _loading ? null : _login,
-                  child: _loading
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('Kirish'),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Center(
-                child: GestureDetector(
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
-                  child: RichText(
-                    text: TextSpan(
-                      text: "Hisob yo'qmi? ",
-                      style: GoogleFonts.nunito(color: c.textMuted, fontSize: 14, fontWeight: FontWeight.w500),
-                      children: [
-                        TextSpan(text: "Ro'yxatdan o'tish",
-                            style: GoogleFonts.nunito(color: c.primary, fontWeight: FontWeight.w800, fontSize: 14)),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ]),
-          ),
-        ),
-      ),
+      body: SafeArea(child: SingleChildScrollView(padding: const EdgeInsets.all(24), child: Form(key: _fk, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const SizedBox(height: 40),
+        Center(child: Text("Kirish", style: GoogleFonts.sora(fontSize: 28, fontWeight: FontWeight.w900))),
+        const SizedBox(height: 40),
+        _FieldW('Email', _ec, AppIconData.email, false),
+        const SizedBox(height: 20),
+        _FieldW('Parol', _pc, AppIconData.lock, true),
+        const SizedBox(height: 40),
+        SizedBox(width: double.infinity, height: 55, child: ElevatedButton(onPressed: _loading ? null : _login, child: _loading ? const CircularProgressIndicator(color: Colors.white) : const Text('Kirish'))),
+        const SizedBox(height: 20),
+        Center(child: TextButton(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())), child: Text("Ro'yxatdan o'tish", style: GoogleFonts.nunito(fontWeight: FontWeight.w800)))),
+      ])))),
     );
+  }
+
+  Widget _FieldW(String lbl, TextEditingController ctrl, AppIconData icon, bool obscure) {
+    return TextFormField(controller: ctrl, obscureText: obscure, decoration: InputDecoration(labelText: lbl, prefixIcon: Padding(padding: const EdgeInsets.all(12), child: AppIcon(icon, size: 18, color: context.colors.textMuted))));
   }
 }
 
@@ -216,33 +217,17 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegState extends State<RegisterScreen> {
   final _fk = GlobalKey<FormState>();
-  final _fn = TextEditingController(), _ln = TextEditingController(),
-        _sc = TextEditingController(), _ec = TextEditingController(),
-        _pw = TextEditingController(), _c2 = TextEditingController();
-  String _grade = '7-sinf';
-  bool _hp = true, _hc = true, _loading = false, _agree = false;
-  final _grades = ['5-sinf','6-sinf','7-sinf','8-sinf','9-sinf','10-sinf','11-sinf'];
-
-  @override
-  void dispose() { for (final c in [_fn,_ln,_sc,_ec,_pw,_c2]) c.dispose(); super.dispose(); }
+  final _fn = TextEditingController(), _ln = TextEditingController(), _ec = TextEditingController(), _pw = TextEditingController();
+  bool _loading = false;
 
   Future<void> _reg() async {
     if (!_fk.currentState!.validate()) return;
-    if (!_agree) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: const Text("Shartlarga rozilik bildiring"), backgroundColor: context.colors.errorRed));
-      return;
-    }
     setState(() => _loading = true);
     try {
-      await context.read<AppProvider>().register(
-          email: _ec.text.trim(), password: _pw.text,
-          firstName: _fn.text.trim(), lastName: _ln.text.trim(),
-          school: _sc.text.trim(), grade: _grade);
-      if (mounted) Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainScreen()));
+      await context.read<AppProvider>().register(email: _ec.text.trim(), password: _pw.text, firstName: _fn.text.trim(), lastName: _ln.text.trim(), school: '', grade: '7-sinf');
+      if (mounted) Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const PinSetupScreen()));
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AuthErrorHandler.getErrorMessage(e)), backgroundColor: context.colors.errorRed));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AuthErrorHandler.getErrorMessage(e)), backgroundColor: context.colors.errorRed));
     } finally { if (mounted) setState(() => _loading = false); }
   }
 
@@ -251,164 +236,19 @@ class _RegState extends State<RegisterScreen> {
     final c = context.colors;
     return Scaffold(
       backgroundColor: c.background,
-      appBar: AppBar(
-        title: const Text("Ro'yxatdan o'tish"),
-        leading: IconButton(
-          icon: AppIcon(AppIconData.back, size: 20, color: c.textSecondary),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(22),
-          child: Form(
-            key: _fk,
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text("Yangi hisob yarating", style: Theme.of(context).textTheme.displaySmall),
-              const SizedBox(height: 5),
-              Text("Ma'lumotlaringizni kiriting", style: Theme.of(context).textTheme.bodyMedium),
-              const SizedBox(height: 24),
-              Row(children: [
-                Expanded(child: _FieldW('Ism', _fn, AppIconData.profile, (v) => v!.isEmpty ? 'Kiriting' : null)),
-                const SizedBox(width: 12),
-                Expanded(child: _FieldW('Familiya', _ln, AppIconData.profile, (v) => v!.isEmpty ? 'Kiriting' : null)),
-              ]),
-              const SizedBox(height: 4),
-              _FieldW('Maktab', _sc, AppIconData.school, (v) => v!.isEmpty ? 'Kiriting' : null),
-              const SizedBox(height: 4),
-              _Lbl('Sinf'), const SizedBox(height: 7),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                decoration: BoxDecoration(
-                  color: c.primary.withValues(alpha: 0.04),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: c.cardBorder, width: 1.5),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _grade, isExpanded: true, dropdownColor: c.cardBg,
-                    icon: AppIcon(AppIconData.forward, size: 14, color: c.textMuted),
-                    style: GoogleFonts.nunito(color: c.textPrimary, fontWeight: FontWeight.w600, fontSize: 15),
-                    onChanged: (v) => setState(() => _grade = v!),
-                    items: _grades.map((g) => DropdownMenuItem(value: g, child: Text(g))).toList(),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 4),
-              _FieldW('Email', _ec, AppIconData.email, (v) {
-                if (v == null || v.isEmpty) return 'Email kiriting';
-                if (!RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) return "Format noto'g'ri";
-                return null;
-              }, keyboardType: TextInputType.emailAddress),
-              const SizedBox(height: 4),
-              _Lbl('Parol'), const SizedBox(height: 7),
-              TextFormField(
-                controller: _pw, obscureText: _hp,
-                style: GoogleFonts.nunito(color: c.textPrimary, fontWeight: FontWeight.w600),
-                decoration: InputDecoration(
-                  hintText: 'Kamida 6 ta belgi',
-                  prefixIcon: Padding(padding: const EdgeInsets.all(12), child: AppIcon(AppIconData.lock, size: 18, color: c.textMuted)),
-                  suffixIcon: IconButton(icon: AppIcon(AppIconData.info, size: 18, color: c.textMuted), onPressed: () => setState(() => _hp = !_hp)),
-                ),
-                validator: (v) => (v == null || v.length < 6) ? 'Kamida 6 ta belgi' : null,
-              ),
-              const SizedBox(height: 14),
-              _Lbl('Parolni tasdiqlang'), const SizedBox(height: 7),
-              TextFormField(
-                controller: _c2, obscureText: _hc,
-                style: GoogleFonts.nunito(color: c.textPrimary, fontWeight: FontWeight.w600),
-                decoration: InputDecoration(
-                  hintText: 'Parolni qaytaring',
-                  prefixIcon: Padding(padding: const EdgeInsets.all(12), child: AppIcon(AppIconData.lock, size: 18, color: c.textMuted)),
-                  suffixIcon: IconButton(icon: AppIcon(AppIconData.info, size: 18, color: c.textMuted), onPressed: () => setState(() => _hc = !_hc)),
-                ),
-                validator: (v) => v != _pw.text ? "Parollar mos kelmaydi" : null,
-              ),
-              const SizedBox(height: 18),
-              GestureDetector(
-                onTap: () => setState(() => _agree = !_agree),
-                child: Row(children: [
-                  Container(
-                    width: 22, height: 22,
-                    decoration: BoxDecoration(
-                      color: _agree ? c.primary : Colors.transparent,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: _agree ? c.primary : c.textLight, width: 1.5),
-                    ),
-                    child: _agree ? Center(child: AppIcon(AppIconData.check, size: 14, color: Colors.white)) : null,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: RichText(
-                      text: TextSpan(
-                        text: 'Foydalanish ',
-                        style: GoogleFonts.nunito(color: c.textMuted, fontSize: 13, fontWeight: FontWeight.w500),
-                        children: [
-                          TextSpan(text: 'shartlari', style: GoogleFonts.nunito(color: c.primary, fontWeight: FontWeight.w700, fontSize: 13)),
-                          const TextSpan(text: 'ga roziman'),
-                        ],
-                      ),
-                    ),
-                  ),
-                ]),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _loading ? null : _reg,
-                  child: _loading
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text("Ro'yxatdan o'tish"),
-                ),
-              ),
-              const SizedBox(height: 18),
-              Center(
-                child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: RichText(
-                    text: TextSpan(
-                      text: 'Hisob bormi? ',
-                      style: GoogleFonts.nunito(color: c.textMuted, fontSize: 14, fontWeight: FontWeight.w500),
-                      children: [
-                        TextSpan(text: 'Kirish',
-                            style: GoogleFonts.nunito(color: c.primary, fontWeight: FontWeight.w800, fontSize: 14)),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-            ]),
-          ),
-        ),
-      ),
+      appBar: AppBar(title: const Text("Ro'yxatdan o'tish")),
+      body: SingleChildScrollView(padding: const EdgeInsets.all(24), child: Form(key: _fk, child: Column(children: [
+        _FieldW('Ism', _fn),
+        _FieldW('Familiya', _ln),
+        _FieldW('Email', _ec),
+        _FieldW('Parol', _pw, obscure: true),
+        const SizedBox(height: 40),
+        SizedBox(width: double.infinity, height: 55, child: ElevatedButton(onPressed: _loading ? null : _reg, child: _loading ? const CircularProgressIndicator(color: Colors.white) : const Text("Ro'yxatdan o'tish"))),
+      ]))),
     );
   }
 
-  Widget _FieldW(String label, TextEditingController ctrl, AppIconData icon,
-      String? Function(String?) validator, {TextInputType? keyboardType}) {
-    final c = context.colors;
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      _Lbl(label), const SizedBox(height: 7),
-      TextFormField(
-        controller: ctrl, keyboardType: keyboardType,
-        style: GoogleFonts.nunito(color: c.textPrimary, fontWeight: FontWeight.w600),
-        decoration: InputDecoration(
-          hintText: label,
-          prefixIcon: Padding(padding: const EdgeInsets.all(12), child: AppIcon(icon, size: 18, color: c.textMuted)),
-        ),
-        validator: validator,
-      ),
-      const SizedBox(height: 14),
-    ]);
+  Widget _FieldW(String lbl, TextEditingController ctrl, {bool obscure = false}) {
+    return Padding(padding: const EdgeInsets.only(bottom: 16), child: TextFormField(controller: ctrl, obscureText: obscure, decoration: InputDecoration(labelText: lbl)));
   }
-}
-
-class _Lbl extends StatelessWidget {
-  final String text;
-  const _Lbl(this.text);
-  @override
-  Widget build(BuildContext context) => Text(text,
-      style: GoogleFonts.sora(fontSize: 12.5, fontWeight: FontWeight.w700, color: context.colors.textSecondary));
 }

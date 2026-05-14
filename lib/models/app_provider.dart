@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../services/firebase_service.dart';
 
@@ -9,6 +10,8 @@ class AppProvider extends ChangeNotifier {
   bool _isLoggedIn = false;
   List<LeaderboardEntry> _leaderboard = [];
   StreamSubscription<List<LeaderboardEntry>>? _leaderboardSub;
+  String? _localPin;
+  bool _pinVerified = false;
 
   ThemeMode _themeMode = ThemeMode.system;
 
@@ -16,6 +19,8 @@ class AppProvider extends ChangeNotifier {
   bool get isLoggedIn => _isLoggedIn;
   List<LeaderboardEntry> get leaderboard => _leaderboard;
   ThemeMode get themeMode => _themeMode;
+  bool get hasPin => _localPin != null && _localPin!.isNotEmpty;
+  bool get isPinVerified => _pinVerified;
 
   AppProvider() {
     _init();
@@ -37,6 +42,7 @@ class AppProvider extends ChangeNotifier {
           if (user != null) {
             _currentUser = user;
             _isLoggedIn = true;
+            await _loadLocalPin();
             _subscribeLeaderboard(); // Faqat login qilgandan keyin
             notifyListeners();
           }
@@ -47,12 +53,43 @@ class AppProvider extends ChangeNotifier {
         // Foydalanuvchi logout qilgan
         _currentUser = null;
         _isLoggedIn = false;
+        _localPin = null;
+        _pinVerified = false;
         _leaderboard = [];
         _leaderboardSub?.cancel();
         _leaderboardSub = null;
         notifyListeners();
       }
     });
+  }
+
+  Future<void> _loadLocalPin() async {
+    if (_currentUser == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    _localPin = prefs.getString('${_currentUser!.email}_pin');
+  }
+
+  Future<void> setPin(String pin) async {
+    if (_currentUser == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('${_currentUser!.email}_pin', pin);
+    _localPin = pin;
+    _pinVerified = true;
+    notifyListeners();
+  }
+
+  bool verifyPin(String pin) {
+    if (_localPin == pin) {
+      _pinVerified = true;
+      notifyListeners();
+      return true;
+    }
+    return false;
+  }
+
+  void resetPinVerification() {
+    _pinVerified = false;
+    notifyListeners();
   }
 
   void _subscribeLeaderboard() {

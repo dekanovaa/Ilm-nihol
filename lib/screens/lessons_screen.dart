@@ -1,4 +1,6 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
@@ -434,7 +436,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> with SingleTick
                     Tab(icon: Icon(Icons.menu_book_rounded, size: 18), text: 'Matn', height: 52),
                     Tab(icon: Icon(Icons.play_circle_rounded, size: 18), text: 'Video', height: 52),
                     Tab(icon: Icon(Icons.quiz_rounded, size: 18), text: 'Test', height: 52),
-                    Tab(icon: Icon(Icons.science_rounded, size: 18), text: 'Lab', height: 52),
+                    Tab(icon: Icon(Icons.functions_rounded, size: 18), text: 'Formula', height: 52),
                   ],
                 ),
               ),
@@ -443,7 +445,12 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> with SingleTick
         ],
         body: TabBarView(
           controller: _tab,
-          children: [_TextTab(lesson: lesson), _VideoTab(lesson: lesson), _QuizTab(lesson: lesson), _LabTab(lesson: lesson)],
+          children: [
+            _TextTab(lesson: lesson),
+            _VideoTab(lesson: lesson),
+            _QuizTab(lesson: lesson),
+            _LessonFormulasTab(lesson: lesson),
+          ],
         ),
       ),
     );
@@ -701,124 +708,532 @@ class _InfoBadge extends StatelessWidget {
   );
 }
 
-// ── LAB TAB ───────────────────────────────────────────────
-class _LabTab extends StatefulWidget {
+
+// ════════════════════════════════════════════════════════════
+// LESSON FORMULAS TAB — mavzuga mos formulalar + kalkulyator
+// ════════════════════════════════════════════════════════════
+class _LessonFormulasTab extends StatefulWidget {
   final LessonModel lesson;
-  const _LabTab({required this.lesson});
+  const _LessonFormulasTab({required this.lesson});
   @override
-  State<_LabTab> createState() => _LabTabState();
+  State<_LessonFormulasTab> createState() => _LessonFormulasTabState();
 }
 
-class _LabTabState extends State<_LabTab> {
-  double _water = 50, _sun = 60, _temp = 22;
-  bool _simulating = false;
-  int _health = 70;
+class _LessonFormulasTabState extends State<_LessonFormulasTab>
+    with SingleTickerProviderStateMixin {
+  late TabController _innerTab;
 
-  void _simulate() {
-    setState(() => _simulating = true);
-    Future.delayed(const Duration(seconds: 2), () {
-      if (!mounted) return;
-      int h = 0;
-      h += (_water >= 40 && _water <= 80) ? 35 : (_water < 20 || _water > 90) ? 5 : 20;
-      h += (_sun >= 50 && _sun <= 80) ? 35 : 15;
-      h += (_temp >= 15 && _temp <= 30) ? 30 : 10;
-      setState(() { _health = h.clamp(0, 100); _simulating = false; });
-    });
+  @override
+  void initState() {
+    super.initState();
+    _innerTab = TabController(length: 2, vsync: this);
   }
 
-  String get _emoji => _health >= 80 ? '🌳' : _health >= 60 ? '🌿' : _health >= 40 ? '🌱' : '🥀';
+  @override
+  void dispose() {
+    _innerTab.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final hColor = Color.lerp(c.errorRed, c.successGreen, _health / 100)!;
+    final formulas = _getFormulasForLesson(widget.lesson);
 
+    return Column(children: [
+      Container(
+        color: c.surface,
+        child: TabBar(
+          controller: _innerTab,
+          labelColor: c.primary,
+          unselectedLabelColor: c.textMuted,
+          indicatorColor: c.primary,
+          indicatorWeight: 2.5,
+          indicatorSize: TabBarIndicatorSize.label,
+          dividerColor: c.cardBorder,
+          labelStyle: GoogleFonts.sora(fontSize: 11, fontWeight: FontWeight.w700),
+          tabs: const [
+            Tab(text: '📐 Formulalar'),
+            Tab(text: '🔢 Kalkulyator'),
+          ],
+        ),
+      ),
+      Expanded(
+        child: TabBarView(
+          controller: _innerTab,
+          children: [
+            _FormulasList(formulas: formulas, lesson: widget.lesson),
+            _LessonCalcPanel(lesson: widget.lesson),
+          ],
+        ),
+      ),
+    ]);
+  }
+
+  List<_LessonFormula> _getFormulasForLesson(LessonModel lesson) {
+    final tag = lesson.steamTag.toUpperCase();
+    final title = lesson.title.toLowerCase();
+    final List<_LessonFormula> result = [];
+
+    // Fotosintez formulalari
+    if (tag == 'SCIENCE' && (title.contains('fotosintez') || title.contains('hujayra') || title.contains('barg'))) {
+      result.addAll([
+        _LessonFormula(
+          name: 'Asosiy fotosintez reaksiyasi',
+          formula: '6CO₂ + 6H₂O + nur → C₆H₁₂O₆ + 6O₂',
+          description: "O'simlik karbonat angidrid va suvdan glyukoza va kislorod hosil qiladi.",
+          color: const Color(0xFF16A34A), emoji: '🌿',
+        ),
+        _LessonFormula(
+          name: 'Fotosintez samaradorligi',
+          formula: 'η = (ΔG / E_nur) × 100%',
+          description: "Fotosintez samaradorligini foizda hisoblaydi.",
+          color: const Color(0xFF16A34A), emoji: '⚡',
+        ),
+      ]);
+    }
+
+    // O'sish formulalari
+    if (title.contains("o'sish") || title.contains('rivojlanish') || title.contains('ildiz')) {
+      result.addAll([
+        _LessonFormula(
+          name: "Nisbiy o'sish tezligi (RGR)",
+          formula: 'RGR = (ln W₂ − ln W₁) / (t₂ − t₁)',
+          description: "O'simlikning biomassa to'plash tezligi.",
+          color: const Color(0xFF0284C7), emoji: '🌱',
+        ),
+        _LessonFormula(
+          name: 'Barglar maydoni indeksi (LAI)',
+          formula: 'LAI = ΣA_barg / A_tuproq',
+          description: "Tuproq maydoniga nisbatan barglar umumiy maydoni.",
+          color: const Color(0xFF0284C7), emoji: '🍃',
+        ),
+      ]);
+    }
+
+    // Ekologiya formulalari
+    if (tag == 'ECOLOGY' || title.contains('ekotizim') || title.contains('populyatsiya')) {
+      result.addAll([
+        _LessonFormula(
+          name: 'Populyatsiya zichligi',
+          formula: 'D = N / A',
+          description: "Birlik maydondagi individlar soni.",
+          color: const Color(0xFF7C3AED), emoji: '🌳',
+        ),
+        _LessonFormula(
+          name: "Shanon xilma-xillik indeksi",
+          formula: "H' = −Σ (pᵢ × ln pᵢ)",
+          description: "Ekosistemdagi o'simlik turlarining xilma-xillik darajasi.",
+          color: const Color(0xFF7C3AED), emoji: '🌍',
+        ),
+      ]);
+    }
+
+    // Suv va transpiratsiya
+    if (title.contains('barg') || title.contains('transpiratsiya') || title.contains('suv')) {
+      result.addAll([
+        _LessonFormula(
+          name: 'Transpiratsiya samaradorligi (TE)',
+          formula: 'TE = ΔBiomassa / ΔSuv',
+          description: "Sarflangan suv hisobiga hosil bo'lgan biomassa.",
+          color: const Color(0xFF0891B2), emoji: '💧',
+        ),
+        _LessonFormula(
+          name: "Suv potentsiali",
+          formula: 'Ψ = Ψs + Ψp',
+          description: "Hujayradagi umumiy suv potentsiali.",
+          color: const Color(0xFF0891B2), emoji: '🔬',
+        ),
+      ]);
+    }
+
+    // Math — Fibonacci
+    if (tag == 'MATH' || title.contains('fibonacci') || title.contains('raqam')) {
+      result.addAll([
+        _LessonFormula(
+          name: 'Fibonacci qatori',
+          formula: 'Fₙ = Fₙ₋₁ + Fₙ₋₂',
+          description: "Har son avvalgi ikki sonning yig'indisi: 1,1,2,3,5,8,13...",
+          color: const Color(0xFFF59E0B), emoji: '🐚',
+        ),
+        _LessonFormula(
+          name: 'Oltin nisbat',
+          formula: 'Φ = (1 + √5) / 2 ≈ 1.618',
+          description: "Fibonacci qatorida qo'shni sonlar nisbatining limiti.",
+          color: const Color(0xFFF59E0B), emoji: '✨',
+        ),
+      ]);
+    }
+
+    // Ko'payish formulalari
+    if (title.contains("ko'payish") || title.contains('gul') || title.contains("urug'")) {
+      result.addAll([
+        _LessonFormula(
+          name: "Logistik o'sish modeli",
+          formula: 'dN/dt = rN × (K − N) / K',
+          description: "Populyatsiya ekologik sig'im chegarasiga yaqinlashganda o'sishi.",
+          color: const Color(0xFFDB2777), emoji: '🌸',
+        ),
+      ]);
+    }
+
+    // Agar hech narsa topilmasa — umumiy formulalar
+    if (result.isEmpty) {
+      result.addAll([
+        _LessonFormula(
+          name: 'Populyatsiya zichligi',
+          formula: 'D = N / A',
+          description: "Birlik maydondagi individlar soni.",
+          color: const Color(0xFF7C3AED), emoji: '🌳',
+        ),
+        _LessonFormula(
+          name: 'Transpiratsiya samaradorligi',
+          formula: 'TE = ΔBiomassa / ΔSuv',
+          description: "Sarflangan suv hisobiga hosil bo'lgan biomassa.",
+          color: const Color(0xFF0891B2), emoji: '💧',
+        ),
+        _LessonFormula(
+          name: "Nisbiy o'sish tezligi (RGR)",
+          formula: 'RGR = (ln W₂ − ln W₁) / (t₂ − t₁)',
+          description: "O'simlikning biomassa to'plash tezligi.",
+          color: const Color(0xFF0284C7), emoji: '🌱',
+        ),
+      ]);
+    }
+
+    return result;
+  }
+}
+
+class _LessonFormula {
+  final String name, formula, description, emoji;
+  final Color color;
+  const _LessonFormula({
+    required this.name, required this.formula,
+    required this.description, required this.emoji, required this.color,
+  });
+}
+
+// ── Formulalar ro'yxati ──────────────────────────────────
+class _FormulasList extends StatelessWidget {
+  final List<_LessonFormula> formulas;
+  final LessonModel lesson;
+  const _FormulasList({required this.formulas, required this.lesson});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Container(
-          padding: const EdgeInsets.all(13),
-          decoration: BoxDecoration(color: c.primary.withValues(alpha: 0.07), borderRadius: BorderRadius.circular(15), border: Border.all(color: c.primary.withValues(alpha: 0.15))),
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [c.primary, c.primaryDark],
+              begin: Alignment.topLeft, end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+          ),
           child: Row(children: [
-            Container(width: 42, height: 42, decoration: BoxDecoration(color: c.primary.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)), child: const Icon(Icons.science_outlined, color: Color(0xFF16A34A), size: 22)),
-            const SizedBox(width: 12),
-            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Virtual Laboratoriya', style: GoogleFonts.sora(fontWeight: FontWeight.w700, fontSize: 14, color: c.textPrimary)),
-              Text("O'simlik parvarish simulatsiyasi", style: GoogleFonts.nunito(fontSize: 11, color: c.textMuted)),
-            ]),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('"${lesson.title}"',
+                  style: GoogleFonts.sora(fontSize: 11, color: Colors.white.withValues(alpha: 0.8), fontWeight: FontWeight.w600),
+                  maxLines: 1, overflow: TextOverflow.ellipsis),
+              const SizedBox(height: 3),
+              Text('Mavzuga mos formulalar',
+                  style: GoogleFonts.sora(fontSize: 15, fontWeight: FontWeight.w800, color: Colors.white)),
+              const SizedBox(height: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(16)),
+                child: Text('${formulas.length} ta formula',
+                    style: GoogleFonts.sora(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w700)),
+              ),
+            ])),
+            const Text('📐', style: TextStyle(fontSize: 42)),
           ]),
         ),
-        const SizedBox(height: 18),
-        Center(child: AnimatedContainer(
-          duration: const Duration(milliseconds: 500),
-          width: 118, height: 118,
-          decoration: BoxDecoration(
-            color: hColor.withValues(alpha: 0.1), shape: BoxShape.circle,
-            border: Border.all(color: hColor.withValues(alpha: 0.35), width: 2),
-            boxShadow: [BoxShadow(color: hColor.withValues(alpha: 0.18), blurRadius: 18)],
-          ),
-          child: Center(child: Text(_emoji, style: const TextStyle(fontSize: 62))),
-        )),
-        const SizedBox(height: 8),
-        Center(child: Text("Sog'liq: $_health%", style: GoogleFonts.sora(fontSize: 14, fontWeight: FontWeight.w800, color: hColor))),
-        const SizedBox(height: 22),
-        _Slider('💧 Suv miqdori', _water, 0, 100, '%', (v) => setState(() => _water = v), c.primary),
-        const SizedBox(height: 10),
-        _Slider('☀️ Quyosh nuri', _sun, 0, 100, '%', (v) => setState(() => _sun = v), c.starColor),
-        const SizedBox(height: 10),
-        _Slider('🌡️ Harorat', _temp, 0, 45, '°C', (v) => setState(() => _temp = v), c.accentOrange),
-        const SizedBox(height: 18),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: _simulating ? null : _simulate,
-            child: _simulating
-                ? const Row(mainAxisAlignment: MainAxisAlignment.center, children: [SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)), SizedBox(width: 10), Text('Simulatsiya...')])
-                : const Text('▶  Simulatsiyani ishga tushirish'),
-          ),
-        ),
-        if (_health < 60) ...[
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(13),
-            decoration: BoxDecoration(color: c.warningYellow.withValues(alpha: 0.07), borderRadius: BorderRadius.circular(13), border: Border.all(color: c.warningYellow.withValues(alpha: 0.2))),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('💡 Maslahat:', style: GoogleFonts.sora(fontWeight: FontWeight.w700, color: c.warningYellow)),
-              const SizedBox(height: 7),
-              if (_water < 40) Text("• Suv miqdorini 40-80% ga ko'taring", style: GoogleFonts.nunito(fontSize: 12, color: c.textSecondary)),
-              if (_water > 80) Text("• O'simlikni haddan ziyod sug'ormang!", style: GoogleFonts.nunito(fontSize: 12, color: c.textSecondary)),
-              if (_temp < 15 || _temp > 30) Text("• Haroratni 15-30°C ga keltiring", style: GoogleFonts.nunito(fontSize: 12, color: c.textSecondary)),
-              if (_sun < 50) Text("• Ko'proq quyosh nuri zarur", style: GoogleFonts.nunito(fontSize: 12, color: c.textSecondary)),
-            ]),
-          ),
-        ],
+        const SizedBox(height: 16),
+        ...formulas.map((f) => _LessonFormulaCard(formula: f)),
+        const SizedBox(height: 80),
       ]),
     );
   }
+}
 
-  Widget _Slider(String label, double value, double min, double max, String unit, ValueChanged<double> onChange, Color color) {
+class _LessonFormulaCard extends StatefulWidget {
+  final _LessonFormula formula;
+  const _LessonFormulaCard({required this.formula});
+  @override
+  State<_LessonFormulaCard> createState() => _LessonFormulaCardState();
+}
+
+class _LessonFormulaCardState extends State<_LessonFormulaCard> {
+  bool _copied = false;
+
+  @override
+  Widget build(BuildContext context) {
     final c = context.colors;
+    final f = widget.formula;
     return Container(
-      padding: const EdgeInsets.fromLTRB(15, 13, 15, 5),
-      decoration: BoxDecoration(color: c.cardBg, borderRadius: BorderRadius.circular(14), border: Border.all(color: c.cardBorder)),
-      child: Column(children: [
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: c.cardBg,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: f.color.withValues(alpha: 0.2)),
+        boxShadow: Theme.of(context).brightness == Brightness.light
+            ? [BoxShadow(color: f.color.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 3))]
+            : [],
+      ),
+      child: Padding(padding: const EdgeInsets.all(14), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          Text(label, style: GoogleFonts.sora(fontWeight: FontWeight.w600, fontSize: 13, color: c.textPrimary)),
-          const Spacer(),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-            child: Text('${value.toStringAsFixed(0)}$unit', style: GoogleFonts.sora(fontSize: 11.5, fontWeight: FontWeight.w700, color: color)),
+            width: 36, height: 36,
+            decoration: BoxDecoration(color: f.color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+            child: Center(child: Text(f.emoji, style: const TextStyle(fontSize: 18))),
+          ),
+          const SizedBox(width: 10),
+          Expanded(child: Text(f.name,
+              style: GoogleFonts.sora(fontSize: 12.5, fontWeight: FontWeight.w800, color: c.textPrimary))),
+          GestureDetector(
+            onTap: () async {
+              await Clipboard.setData(ClipboardData(text: f.formula));
+              setState(() => _copied = true);
+              Future.delayed(const Duration(seconds: 2), () {
+                if (mounted) setState(() => _copied = false);
+              });
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+              decoration: BoxDecoration(
+                color: _copied ? f.color.withValues(alpha: 0.2) : f.color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                Icon(_copied ? Icons.check_rounded : Icons.copy_rounded, color: f.color, size: 13),
+                const SizedBox(width: 4),
+                Text(_copied ? 'Nusxalandi' : 'Nusxa',
+                    style: GoogleFonts.sora(fontSize: 10, color: f.color, fontWeight: FontWeight.w700)),
+              ]),
+            ),
           ),
         ]),
-        SliderTheme(
-          data: SliderTheme.of(context).copyWith(
-            activeTrackColor: color, thumbColor: color,
-            inactiveTrackColor: color.withValues(alpha: 0.15),
-            overlayColor: color.withValues(alpha: 0.1), trackHeight: 4,
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: f.color.withValues(alpha: 0.07),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: f.color.withValues(alpha: 0.18)),
           ),
-          child: Slider(value: value, min: min, max: max, onChanged: onChange),
+          child: Text(f.formula,
+              style: GoogleFonts.robotoMono(
+                  fontSize: 13.5, fontWeight: FontWeight.w700, color: f.color, height: 1.5),
+              textAlign: TextAlign.center),
         ),
+        const SizedBox(height: 10),
+        Text(f.description, style: GoogleFonts.nunito(fontSize: 12, color: c.textMuted, height: 1.5)),
+      ])),
+    );
+  }
+}
+
+// ── Mini Lesson Calculator ─────────────────────────────────
+class _LessonCalcPanel extends StatefulWidget {
+  final LessonModel lesson;
+  const _LessonCalcPanel({required this.lesson});
+  @override
+  State<_LessonCalcPanel> createState() => _LessonCalcPanelState();
+}
+
+class _LessonCalcPanelState extends State<_LessonCalcPanel> {
+  final _c1 = TextEditingController();
+  final _c2 = TextEditingController();
+  final _c3 = TextEditingController();
+  String _result = '';
+  int _selectedCalc = 0;
+
+  final List<Map<String, dynamic>> _calcTypes = [
+    {'label': "O'sish tezligi", 'emoji': '🌱', 'id': 'rgr'},
+    {'label': 'Zichlik', 'emoji': '🌳', 'id': 'density'},
+    {'label': 'Transpiratsiya', 'emoji': '💧', 'id': 'te'},
+  ];
+
+  @override
+  void dispose() {
+    _c1.dispose(); _c2.dispose(); _c3.dispose();
+    super.dispose();
+  }
+
+  void _calculate() {
+    setState(() {
+      try {
+        switch (_selectedCalc) {
+          case 0: // RGR
+            final w1 = double.parse(_c1.text);
+            final w2 = double.parse(_c2.text);
+            final days = double.parse(_c3.text);
+            if (w1 <= 0 || w2 <= 0 || days <= 0) throw Exception();
+            final rgr = (log(w2) - log(w1)) / days;
+            _result = 'RGR = ${rgr.toStringAsFixed(4)} g/g/kun';
+          case 1: // Populyatsiya zichligi
+            final n = double.parse(_c1.text);
+            final area = double.parse(_c2.text);
+            if (area <= 0) throw Exception();
+            final d = n / area;
+            _result = 'D = ${d.toStringAsFixed(3)} dona/m²';
+          case 2: // Transpiratsiya
+            final biomass = double.parse(_c1.text);
+            final water = double.parse(_c2.text);
+            if (water <= 0) throw Exception();
+            final te = biomass / water;
+            _result = 'TE = ${te.toStringAsFixed(3)} g/L';
+        }
+      } catch (_) {
+        _result = "❌ To'g'ri qiymat kiriting!";
+      }
+    });
+  }
+
+  Widget _field(String label, String hint, TextEditingController ctrl, Color color) {
+    final c = context.colors;
+    return Padding(padding: const EdgeInsets.only(bottom: 10), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(label, style: GoogleFonts.sora(fontSize: 11.5, fontWeight: FontWeight.w700, color: c.textSecondary)),
+      const SizedBox(height: 5),
+      TextField(
+        controller: ctrl,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        style: GoogleFonts.sora(fontSize: 14, color: c.textPrimary, fontWeight: FontWeight.w600),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: GoogleFonts.nunito(color: c.textMuted, fontSize: 13),
+          prefixIcon: Icon(Icons.edit_rounded, size: 16, color: color),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          filled: true, fillColor: c.cardBg,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: c.cardBorder)),
+          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: c.cardBorder)),
+          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: color, width: 2)),
+        ),
+      ),
+    ]));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final id = _calcTypes[_selectedCalc]['id'] as String;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 80),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(children: List.generate(_calcTypes.length, (i) {
+            final on = _selectedCalc == i;
+            return GestureDetector(
+              onTap: () => setState(() { _selectedCalc = i; _result = ''; _c1.clear(); _c2.clear(); _c3.clear(); }),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                margin: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: on ? c.primary : c.cardBg,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: on ? c.primary : c.cardBorder, width: on ? 2 : 1),
+                  boxShadow: on ? [BoxShadow(color: c.primary.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 3))] : [],
+                ),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Text(_calcTypes[i]['emoji'], style: const TextStyle(fontSize: 14)),
+                  const SizedBox(width: 6),
+                  Text(_calcTypes[i]['label'],
+                      style: GoogleFonts.sora(fontSize: 12, fontWeight: FontWeight.w700,
+                          color: on ? Colors.white : c.textMuted)),
+                ]),
+              ),
+            );
+          })),
+        ),
+        const SizedBox(height: 18),
+        // Formula display
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: c.primary.withValues(alpha: 0.07),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: c.primary.withValues(alpha: 0.2)),
+          ),
+          child: Text(
+            id == 'rgr'
+                ? 'RGR = (ln W₂ − ln W₁) / (t₂ − t₁)'
+                : id == 'density'
+                    ? 'D = N / A'
+                    : 'TE = ΔBiomassa / ΔSuv',
+            style: GoogleFonts.robotoMono(
+                fontSize: 13, fontWeight: FontWeight.w700, color: c.primary, height: 1.5),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        const SizedBox(height: 18),
+        if (id == 'rgr') ...[
+          _field("W₁ — Boshlang'ich massa (g)", 'masalan: 5.2', _c1, c.primary),
+          _field('W₂ — Yakuniy massa (g)', 'masalan: 12.8', _c2, c.primary),
+          _field('Davr (kunlar)', 'masalan: 14', _c3, c.primary),
+        ] else if (id == 'density') ...[
+          _field('N — Individlar soni', 'masalan: 120', _c1, const Color(0xFF7C3AED)),
+          _field('A — Maydon (m²)', 'masalan: 25', _c2, const Color(0xFF7C3AED)),
+        ] else ...[
+          _field('Biomassa (g)', 'masalan: 8.5', _c1, const Color(0xFF0891B2)),
+          _field('Sarflangan suv (L)', 'masalan: 3.2', _c2, const Color(0xFF0891B2)),
+        ],
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () { HapticFeedback.selectionClick(); _calculate(); },
+            icon: const Icon(Icons.calculate_rounded, size: 18),
+            label: Text('Hisoblash', style: GoogleFonts.sora(fontWeight: FontWeight.w700, fontSize: 14)),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
+          ),
+        ),
+        if (_result.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: _result.startsWith('❌')
+                  ? c.errorRed.withValues(alpha: 0.08)
+                  : c.successGreen.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: _result.startsWith('❌')
+                    ? c.errorRed.withValues(alpha: 0.25)
+                    : c.successGreen.withValues(alpha: 0.25),
+              ),
+            ),
+            child: Column(children: [
+              Icon(
+                _result.startsWith('❌') ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
+                color: _result.startsWith('❌') ? c.errorRed : c.successGreen,
+                size: 28,
+              ),
+              const SizedBox(height: 8),
+              Text(_result,
+                  style: GoogleFonts.sora(
+                      fontSize: 16, fontWeight: FontWeight.w800,
+                      color: _result.startsWith('❌') ? c.errorRed : c.successGreen),
+                  textAlign: TextAlign.center),
+            ]),
+          ),
+        ],
       ]),
     );
   }

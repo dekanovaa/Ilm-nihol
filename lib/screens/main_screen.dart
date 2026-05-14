@@ -5,6 +5,7 @@ import '../theme/app_theme.dart';
 import 'home_screen.dart';
 import 'lessons_screen.dart';
 import 'leaderboard_screen.dart';
+import 'labs_screen.dart';
 import 'profile_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -17,12 +18,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   int _idx = 0;
   late List<AnimationController> _ctrls;
 
-  final _screens = const [HomeScreen(), LessonsScreen(), LeaderboardScreen(), ProfileScreen()];
+  final _screens = [HomeScreen(), LessonsScreen(), LabsScreen(), LeaderboardScreen(), ProfileScreen()];
 
   @override
   void initState() {
     super.initState();
-    _ctrls = List.generate(4, (_) => AnimationController(vsync: this, duration: const Duration(milliseconds: 280)));
+    _ctrls = List.generate(5, (_) => AnimationController(vsync: this, duration: const Duration(milliseconds: 280)));
     _ctrls[0].forward();
   }
 
@@ -61,8 +62,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               children: [
                 _NavItem(activeIcon: Icons.home_rounded, outlineIcon: Icons.home_outlined, label: 'Asosiy', index: 0, current: _idx, ctrl: _ctrls[0], onTap: _onTap),
                 _NavItem(activeIcon: Icons.menu_book_rounded, outlineIcon: Icons.menu_book_outlined, label: 'Darslar', index: 1, current: _idx, ctrl: _ctrls[1], onTap: _onTap),
-                _NavItem(activeIcon: Icons.leaderboard_rounded, outlineIcon: Icons.leaderboard_outlined, label: 'Reyting', index: 2, current: _idx, ctrl: _ctrls[2], onTap: _onTap),
-                _NavItem(activeIcon: Icons.person_rounded, outlineIcon: Icons.person_outline_rounded, label: 'Profil', index: 3, current: _idx, ctrl: _ctrls[3], onTap: _onTap),
+                _NavItem(activeIcon: Icons.science_rounded, outlineIcon: Icons.science_outlined, label: 'Lab', index: 2, current: _idx, ctrl: _ctrls[2], onTap: _onTap),
+                _NavItem(activeIcon: Icons.leaderboard_rounded, outlineIcon: Icons.leaderboard_outlined, label: 'Reyting', index: 3, current: _idx, ctrl: _ctrls[3], onTap: _onTap),
+                _NavItem(activeIcon: Icons.person_rounded, outlineIcon: Icons.person_outline_rounded, label: 'Profil', index: 4, current: _idx, ctrl: _ctrls[4], onTap: _onTap),
               ],
             ),
           ),

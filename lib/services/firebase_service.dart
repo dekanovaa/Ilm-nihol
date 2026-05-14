@@ -1,13 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/models.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
+import 'dart:typed_data';
 
 class FirebaseService {
   static final FirebaseAuth _auth = FirebaseAuth.instance;
   static final FirebaseFirestore _db = FirebaseFirestore.instance;
+  static final FirebaseStorage _storage = FirebaseStorage.instance;
 
   static FirebaseAuth get auth => _auth;
   static FirebaseFirestore get db => _db;
+  static FirebaseStorage get storage => _storage;
 
   // ── AUTH ──────────────────────────────────────────────────
 
@@ -76,5 +81,64 @@ class FirebaseService {
     if (score >= 600) return "Ilg'or O'quvchi 🌟";
     if (score >= 300) return "Botanik Talaba 🌿";
     return 'Yangi Botanik 🌱';
+  }
+
+  // ── COMMUNITY ──────────────────────────────────────────
+
+  static Stream<List<CommunityPostModel>> communityPostsStream() {
+    return _db
+        .collection('posts')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((doc) => CommunityPostModel.fromMap(doc.data(), doc.id))
+            .toList());
+  }
+
+  static Future<void> createPost(CommunityPostModel post) async {
+    await _db.collection('posts').add(post.toMap());
+  }
+
+  static Future<void> likePost(String postId) async {
+    await _db.collection('posts').doc(postId).update({
+      'likes': FieldValue.increment(1),
+    });
+  }
+
+  /// Eng faol foydalanuvchilarni oladi (masalan, eng ko'p scorega ega 10 tasi)
+  static Stream<List<UserModel>> topUsersStream() {
+    return _db
+        .collection('users')
+        .orderBy('totalScore', descending: true)
+        .limit(10)
+        .snapshots()
+        .map((snap) =>
+            snap.docs.map((doc) => UserModel.fromMap(doc.data())).toList());
+  }
+
+  static Stream<List<CommunityPostModel>> userPostsStream(String userId) {
+    return _db
+        .collection('posts')
+        .where('userId', isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((doc) => CommunityPostModel.fromMap(doc.data(), doc.id))
+            .toList());
+  }
+
+  static Future<String> uploadImage(Uint8List bytes, String folder) async {
+    final ref = _storage
+        .ref()
+        .child(folder)
+        .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
+    final uploadTask = ref.putData(
+        bytes, SettableMetadata(contentType: 'image/jpeg'));
+    final snapshot = await uploadTask;
+    return await snapshot.ref.getDownloadURL();
+  }
+
+  static Future<void> deletePost(String postId) async {
+    await _db.collection('posts').doc(postId).delete();
   }
 }
