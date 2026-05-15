@@ -80,39 +80,39 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-// ── DATA ──────────────────────────────────────────────────
+// Home Screen Data
 final _herbariumVideos = [
   {
-    'title': 'Gerbariy tayyorlash: To\'liq qo\'llanma',
-    'desc': 'O\'simliklarni to\'g\'ri yig\'ish, quritish va saqlash usullarini o\'rganing.',
-    'url': 'https://www.youtube.com/watch?v=S0vshG6G-L8',
-    'thumb': 'https://img.youtube.com/vi/S0vshG6G-L8/hqdefault.jpg',
-    'duration': '8:12',
+    'title': 'Gerbariy tayyorlash',
+    'desc': 'O\'simliklarni qog\'ozda presslab quritish bo\'yicha qisqa dars.',
+    'url': 'https://youtube.com/shorts/96UAaf0NsSE',
+    'thumb': 'https://img.youtube.com/vi/96UAaf0NsSE/hqdefault.jpg',
+    'duration': '0:58',
   },
   {
-    'title': 'Botanika san\'ati: Gerbariy turlar',
-    'desc': 'Ilmiy va badiiy gerbariylar yaratishning nozik sirlari.',
-    'url': 'https://www.youtube.com/watch?v=R0X_WshX168',
-    'thumb': 'https://img.youtube.com/vi/R0X_WshX168/hqdefault.jpg',
-    'duration': '12:45',
+    'title': 'Gerbariy tayyorlash',
+    'desc': 'O\'simliklarni to\'g\'ri yig\'ish va tayyorlash bo\'yicha qisqa dars.',
+    'url': 'https://youtube.com/shorts/vqD5OBIXJAo',
+    'thumb': 'https://img.youtube.com/vi/vqD5OBIXJAo/hqdefault.jpg',
+    'duration': '0:56',
   },
   {
-    'title': 'O\'rmon o\'simliklaridan gerbariy',
-    'desc': 'Turli xil barg va gullarni quritish texnikasi.',
-    'url': 'https://www.youtube.com/watch?v=CqY0T7_Z_eU',
-    'thumb': 'https://img.youtube.com/vi/CqY0T7_Z_eU/hqdefault.jpg',
-    'duration': '6:30',
+    'title': 'Gerbariy tayyorlash',
+    'desc': 'Botanika olamida gerbariyning o\'rni va uni saqlash usullari.',
+    'url': 'https://youtube.com/shorts/BlBvibGYvuE',
+    'thumb': 'https://img.youtube.com/vi/BlBvibGYvuE/hqdefault.jpg',
+    'duration': '0:45',
   },
   {
-    'title': 'Maktab laboratoriyasi: Gerbariy',
-    'desc': 'O\'quvchilar uchun amaliy mashg\'ulot videodarsi.',
-    'url': 'https://www.youtube.com/watch?v=3eR_Vq_8s00',
-    'thumb': 'https://img.youtube.com/vi/3eR_Vq_8s00/hqdefault.jpg',
-    'duration': '10:15',
+    'title': 'Gerbariy tayyorlash',
+    'desc': 'Gerbariy yaratishning ilmiy asoslari va amaliy qo\'llanmasi.',
+    'url': 'https://youtu.be/FXsIaYxGU3M',
+    'thumb': 'https://img.youtube.com/vi/FXsIaYxGU3M/hqdefault.jpg',
+    'duration': '12:15',
   },
 ];
 
-// ── WIDGETS ───────────────────────────────────────────────
+// Home Screen Widgets
 class _LogoBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -124,7 +124,7 @@ class _LogoBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [BoxShadow(color: c.primary.withValues(alpha: 0.35), blurRadius: 8, offset: const Offset(0, 3))],
       ),
-      child: const Center(child: Text('🌿', style: TextStyle(fontSize: 18))),
+      child: const Center(child: Icon(Icons.eco_rounded, color: Colors.white, size: 20)),
     );
   }
 }
@@ -182,7 +182,7 @@ class _GameSection extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Row(children: [
-              const Text('🎮', style: TextStyle(fontSize: 44)),
+              const Icon(Icons.sports_esports, color: Colors.white, size: 40),
               const SizedBox(width: 18),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text("Botanika O'yini", style: GoogleFonts.sora(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
@@ -256,9 +256,20 @@ class _FlashcardGameSheetState extends State<_FlashcardGameSheet> {
       Expanded(
         child: Container(
           width: double.infinity,
-          decoration: BoxDecoration(color: context.colors.primary.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(24), border: Border.all(color: context.colors.primary.withValues(alpha: 0.1))),
+          decoration: BoxDecoration(
+            color: context.colors.primary.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: context.colors.primary.withValues(alpha: 0.1)),
+          ),
           padding: const EdgeInsets.all(20),
-          child: Center(child: Text(q['q'] as String, style: GoogleFonts.sora(fontSize: 20, fontWeight: FontWeight.w800), textAlign: TextAlign.center)),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.quiz, color: context.colors.primary, size: 48),
+              const SizedBox(height: 16),
+              Text(q['q'] as String, style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w800), textAlign: TextAlign.center),
+            ],
+          ),
         ),
       ),
       const SizedBox(height: 30),
@@ -278,7 +289,7 @@ class _FlashcardGameSheetState extends State<_FlashcardGameSheet> {
 
   Widget _resultView() {
     return Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      const Text('🏆', style: TextStyle(fontSize: 80)),
+      const Icon(Icons.emoji_events, color: Colors.orange, size: 80),
       const SizedBox(height: 20),
       Text("O'yin yakunlandi!", style: GoogleFonts.sora(fontSize: 22, fontWeight: FontWeight.w800)),
       const SizedBox(height: 10),

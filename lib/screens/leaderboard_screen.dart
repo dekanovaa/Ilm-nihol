@@ -35,7 +35,7 @@ class LeaderboardScreen extends StatelessWidget {
                       Container(
                         width: 42, height: 42,
                         decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(13), border: Border.all(color: Colors.white.withValues(alpha: 0.28))),
-                        child: const Center(child: Text('🏆', style: TextStyle(fontSize: 22))),
+                        child: const Center(child: Icon(Icons.emoji_events_rounded, color: Colors.white, size: 22)),
                       ),
                       const SizedBox(width: 12),
                       Text('Reyting', style: GoogleFonts.sora(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5)),
@@ -96,9 +96,9 @@ class _Podium extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(14, 18, 14, 0),
       decoration: BoxDecoration(color: c.cardBg, borderRadius: BorderRadius.circular(22), border: Border.all(color: c.cardBorder)),
       child: Row(crossAxisAlignment: CrossAxisAlignment.end, mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-        _PodItem(entry: top3[1], rank: 2, h: 72, medal: '🥈', color: c.silver),
-        _PodItem(entry: top3[0], rank: 1, h: 104, medal: '🥇', color: c.gold),
-        if (top3.length > 2) _PodItem(entry: top3[2], rank: 3, h: 54, medal: '🥉', color: c.bronze),
+        _PodItem(entry: top3[1], rank: 2, h: 72, icon: Icons.workspace_premium, color: c.silver),
+        _PodItem(entry: top3[0], rank: 1, h: 104, icon: Icons.emoji_events, color: c.gold),
+        if (top3.length > 2) _PodItem(entry: top3[2], rank: 3, h: 54, icon: Icons.military_tech, color: c.bronze),
       ]),
     );
   }
@@ -108,15 +108,15 @@ class _PodItem extends StatelessWidget {
   final LeaderboardEntry entry;
   final int rank;
   final double h;
-  final String medal;
+  final IconData icon;
   final Color color;
-  const _PodItem({required this.entry, required this.rank, required this.h, required this.medal, required this.color});
+  const _PodItem({required this.entry, required this.rank, required this.h, required this.icon, required this.color});
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
     return Column(children: [
-      Text(medal, style: const TextStyle(fontSize: 24)),
+      Icon(icon, color: color, size: 28),
       const SizedBox(height: 5),
       Container(
         width: 44, height: 44,

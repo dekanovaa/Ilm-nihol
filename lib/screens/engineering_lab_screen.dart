@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_theme.dart';
 
-// ════════════════════════════════════════════════════════════
-// ENGINEERING LAB SCREEN — har mavzu uchun alohida laboratoriya
-// ════════════════════════════════════════════════════════════
+// Engineering Lab Screen
 class EngineeringLabScreen extends StatefulWidget {
   const EngineeringLabScreen({super.key});
   @override
@@ -20,7 +19,7 @@ class _EngineeringLabScreenState extends State<EngineeringLabScreen>
     _LabConfig(
       id: 'photosynthesis',
       title: "Fotosintez laboratoriyasi",
-      emoji: '🌿',
+      icon: Icons.eco_rounded,
       color: const Color(0xFF16A34A),
       desc: "CO₂, suv va yorug'lik orqali fotosintez samaradorligini o'lchaymiz",
       params: [
@@ -37,7 +36,7 @@ class _EngineeringLabScreenState extends State<EngineeringLabScreen>
     _LabConfig(
       id: 'osmosis',
       title: "Osmoz jarayoni",
-      emoji: '💧',
+      icon: Icons.water_drop_rounded,
       color: const Color(0xFF0284C7),
       desc: "Hujayra membranasi orqali suv o'tishini nazorat qilamiz",
       params: [
@@ -53,7 +52,7 @@ class _EngineeringLabScreenState extends State<EngineeringLabScreen>
     _LabConfig(
       id: 'respiration',
       title: "O'simlik nafas olishi",
-      emoji: '🫁',
+      icon: Icons.air_rounded,
       color: const Color(0xFFDC2626),
       desc: "Aerob nafas olish: ATP va CO₂ ishlab chiqarishni o'lchaymiz",
       params: [
@@ -70,7 +69,7 @@ class _EngineeringLabScreenState extends State<EngineeringLabScreen>
     _LabConfig(
       id: 'pollination',
       title: "Changlanish (Gullash sikli)",
-      emoji: '🌸',
+      icon: Icons.local_florist_rounded,
       color: const Color(0xFFDB2777),
       desc: "Changlanish sharoitlarini sozlab, urug'lanish foizini aniqlaymiz",
       params: [
@@ -87,7 +86,7 @@ class _EngineeringLabScreenState extends State<EngineeringLabScreen>
     _LabConfig(
       id: 'soil',
       title: "Tuproq tarkibi",
-      emoji: '🪨',
+      icon: Icons.layers_rounded,
       color: const Color(0xFF92400E),
       desc: "Mineral oziqalar miqdorini tartiblab, o'simlik o'sishini kuzatamiz",
       params: [
@@ -104,7 +103,7 @@ class _EngineeringLabScreenState extends State<EngineeringLabScreen>
     _LabConfig(
       id: 'hydroponics',
       title: "Gidroponika",
-      emoji: '🧪',
+      icon: Icons.science_rounded,
       color: const Color(0xFF7C3AED),
       desc: "Tuproqsiz o'stirish — eritma tarkibi va muhitni boshqaramiz",
       params: [
@@ -120,10 +119,53 @@ class _EngineeringLabScreenState extends State<EngineeringLabScreen>
     ),
   ];
 
+  static final List<Map<String, dynamic>> _phetLabs = [
+    {
+      'title': 'Membrana transporti',
+      'desc': 'Moddalarning hujayra membranasi orqali harakatlanishini o\'rganing.',
+      'url': 'https://phet.colorado.edu/sims/html/membrane-transport/latest/membrane-transport_all.html',
+      'icon': Icons.biotech_rounded,
+      'tag': 'Hujayra',
+      'color': const Color(0xFF22C55E),
+    },
+    {
+      'title': 'Tabiiy tanlanish',
+      'desc': 'Evolyutsion jarayonlar va o\'simliklar populyatsiyasi o\'zgarishini simulyatsiya qiling.',
+      'url': 'https://phet.colorado.edu/sims/html/natural-selection/latest/natural-selection_all.html',
+      'icon': Icons.group_work_rounded,
+      'tag': 'Evolyutsiya',
+      'color': const Color(0xFF10B981),
+    },
+    {
+      'title': 'pH shkalasi',
+      'desc': 'Tuproq tarkibi va pH darajasining o\'simliklarga ta\'sirini tushunish uchun.',
+      'url': 'https://phet.colorado.edu/sims/html/ph-scale/latest/ph-scale_all.html',
+      'icon': Icons.biotech_rounded,
+      'tag': 'Kimyo',
+      'color': const Color(0xFF34D399),
+    },
+    {
+      'title': 'Gen ifodalanishi',
+      'desc': 'Molekulyar biologiya va genetika asoslarini virtual o\'rganing.',
+      'url': 'https://phet.colorado.edu/sims/html/gene-expression-essentials/latest/gene-expression-essentials_all.html',
+      'icon': Icons.biotech_rounded,
+      'tag': 'Genetika',
+      'color': const Color(0xFF15803D),
+    },
+    {
+      'title': 'Fotosintez (LabX)',
+      'desc': 'Yorug\'lik energiyasining kimyoviy energiyaga aylanishi laboratoriyasi.',
+      'url': 'https://www.labxchange.org/library/items/lb:LabXchange:6304c4f3:html:1',
+      'icon': Icons.wb_sunny_rounded,
+      'tag': 'Fiziologiya',
+      'color': const Color(0xFF4ADE80),
+    },
+  ];
+
   @override
   void initState() {
     super.initState();
-    _tab = TabController(length: 2, vsync: this);
+    _tab = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -144,22 +186,24 @@ class _EngineeringLabScreenState extends State<EngineeringLabScreen>
             backgroundColor: c.background,
             surfaceTintColor: Colors.transparent,
             elevation: 0,
-            leading: Container(
-              margin: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: c.cardBg,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: c.cardBorder),
-              ),
-              child: IconButton(
-                icon: Icon(Icons.arrow_back_ios_new_rounded, color: c.textPrimary, size: 16),
-                onPressed: () => Navigator.pop(context),
-                padding: EdgeInsets.zero,
-              ),
-            ),
+            leading: Navigator.canPop(context) 
+                ? Container(
+                    margin: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: c.cardBg,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: c.cardBorder),
+                    ),
+                    child: IconButton(
+                      icon: Icon(Icons.arrow_back_ios_new_rounded, color: c.textPrimary, size: 16),
+                      onPressed: () => Navigator.pop(context),
+                      padding: EdgeInsets.zero,
+                    ),
+                  )
+                : null,
             title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Elektron Laboratoriya', style: Theme.of(context).textTheme.displaySmall),
-              Text('${_labs.length} ta virtual tajriba', style: GoogleFonts.nunito(fontSize: 12, color: c.textMuted)),
+              Text('Elektron Laboratoriya', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
+              Text('${_labs.length + _phetLabs.length} ta virtual tajriba', style: GoogleFonts.nunito(fontSize: 11, color: c.textMuted)),
             ]),
             actions: [
               Container(
@@ -185,8 +229,12 @@ class _EngineeringLabScreenState extends State<EngineeringLabScreen>
               indicatorWeight: 3,
               indicatorSize: TabBarIndicatorSize.label,
               dividerColor: c.cardBorder,
-              labelStyle: GoogleFonts.sora(fontSize: 12, fontWeight: FontWeight.w700),
-              tabs: const [Tab(text: "Laboratoriyalar"), Tab(text: "Tajriba")],
+              labelStyle: GoogleFonts.sora(fontSize: 11, fontWeight: FontWeight.w700),
+              tabs: const [
+                Tab(text: "Mahalliy"),
+                Tab(text: "Tajriba"),
+                Tab(text: "PhET Lab"),
+              ],
             ),
           ),
         ],
@@ -202,6 +250,7 @@ class _EngineeringLabScreenState extends State<EngineeringLabScreen>
               },
             ),
             _ExperimentTab(key: ValueKey(_selectedLab), lab: _labs[_selectedLab]),
+            _PhetTab(labs: _phetLabs),
           ],
         ),
       ),
@@ -293,7 +342,7 @@ class _LabListTab extends StatelessWidget {
             Container(
               width: 52, height: 52,
               decoration: BoxDecoration(color: const Color(0xFFEA580C).withValues(alpha: 0.12), borderRadius: BorderRadius.circular(14)),
-              child: const Center(child: Text('⚗️', style: TextStyle(fontSize: 28))),
+              child: Icon(Icons.biotech_rounded, color: const Color(0xFFEA580C), size: 28),
             ),
             const SizedBox(width: 14),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -327,7 +376,7 @@ class _LabListTab extends StatelessWidget {
                 ),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    Text(lab.emoji, style: const TextStyle(fontSize: 32)),
+                    Icon(lab.icon, color: lab.color, size: 32),
                     if (isSelected)
                       Container(padding: const EdgeInsets.all(4), decoration: BoxDecoration(color: lab.color, shape: BoxShape.circle), child: const Icon(Icons.check_rounded, color: Colors.white, size: 12)),
                   ]),
@@ -387,7 +436,7 @@ class _ExperimentTabState extends State<_ExperimentTab> {
     if (_result >= 70) return '🎉 A — Ajoyib!';
     if (_result >= 55) return '👍 B — Yaxshi';
     if (_result >= 35) return '💪 C — O\'rtacha';
-    return '📚 D — Qayta urinib ko\'ring';
+    return 'D — Qayta urinib ko\'ring';
   }
 
   Color _gradeColor(BuildContext ctx) {
@@ -412,7 +461,7 @@ class _ExperimentTabState extends State<_ExperimentTab> {
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(children: [
-            Text(lab.emoji, style: const TextStyle(fontSize: 48)),
+            Icon(lab.icon, color: Colors.white, size: 48),
             const SizedBox(width: 14),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(lab.title, style: GoogleFonts.sora(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.white)),
@@ -541,11 +590,12 @@ class _ExperimentTabState extends State<_ExperimentTab> {
 
 // ─── Data classes ─────────────────────────────────────────
 class _LabConfig {
-  final String id, title, emoji, desc, resultLabel, unit, fact;
+  final String id, title, desc, resultLabel, unit, fact;
+  final IconData icon;
   final Color color;
   final List<_Param> params;
   final double Function(List<double>) resultFn;
-  const _LabConfig({required this.id, required this.title, required this.emoji, required this.color, required this.desc, required this.params, required this.resultFn, required this.resultLabel, required this.unit, required this.fact});
+  const _LabConfig({required this.id, required this.title, required this.icon, required this.color, required this.desc, required this.params, required this.resultFn, required this.resultLabel, required this.unit, required this.fact});
 }
 
 class _Param {
@@ -553,4 +603,65 @@ class _Param {
   final double min, max, defaultVal;
   final Color color;
   const _Param(this.label, this.min, this.max, this.defaultVal, this.unit, this.color);
+}
+
+// ─── PhET Tab ──────────────────────────────────────────────
+class _PhetTab extends StatelessWidget {
+  final List<Map<String, dynamic>> labs;
+  const _PhetTab({required this.labs});
+
+  Future<void> _launch(BuildContext context, String url) async {
+    final uri = Uri.parse(url);
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Havolani ochib bo'lmadi: $e")),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return ListView.builder(
+      padding: const EdgeInsets.all(18),
+      itemCount: labs.length,
+      itemBuilder: (context, index) {
+        final lab = labs[index];
+        final color = lab['color'] as Color;
+        return Container(
+          margin: const EdgeInsets.only(bottom: 15),
+          decoration: BoxDecoration(
+            color: c.cardBg,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: c.cardBorder),
+          ),
+          child: InkWell(
+            onTap: () => _launch(context, lab['url']),
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(children: [
+                Container(
+                  width: 54, height: 54,
+                  decoration: BoxDecoration(color: color.withValues(alpha:0.1), borderRadius: BorderRadius.circular(15)),
+                  child: Center(child: Icon(lab['icon'] as IconData, color: color, size: 26)),
+                ),
+                const SizedBox(width: 15),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(lab['title'], style: GoogleFonts.sora(fontSize: 14, fontWeight: FontWeight.w800, color: c.textPrimary)),
+                  const SizedBox(height: 4),
+                  Text(lab['desc'], style: GoogleFonts.nunito(fontSize: 11, color: c.textMuted), maxLines: 2),
+                ])),
+                const Icon(Icons.open_in_new_rounded, size: 16, color: Colors.grey),
+              ]),
+            ),
+          ),
+        );
+      },
+    );
+  }
 }

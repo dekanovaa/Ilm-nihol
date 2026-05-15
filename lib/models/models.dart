@@ -1,6 +1,4 @@
-// ============================================================
-// MODELS
-// ============================================================
+// Application Models
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
@@ -47,10 +45,10 @@ class UserModel {
   }
 
   String get rankTitle {
-    if (totalScore >= 900) return 'Master Botanik 🏆';
-    if (totalScore >= 600) return 'Ilg\'or O\'quvchi 🌟';
-    if (totalScore >= 300) return 'Botanik Talaba 🌿';
-    return 'Yangi Botanik 🌱';
+    if (totalScore >= 900) return 'Master Botanik';
+    if (totalScore >= 600) return 'Ilg\'or O\'quvchi';
+    if (totalScore >= 300) return 'Botanik Talaba';
+    return 'Yangi Botanik';
   }
 
   Map<String, dynamic> toMap() => {

@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_theme.dart';
 
 class ArtsHerbariumScreen extends StatefulWidget {
@@ -153,10 +154,8 @@ class _ArtsHerbariumScreenState extends State<ArtsHerbariumScreen>
               ),
             ),
             title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text("Gerbariy Bo'limi",
-                  style: Theme.of(context).textTheme.displaySmall),
-              Text("Videolar va mening gerbariym",
-                  style: GoogleFonts.nunito(fontSize: 12, color: c.textMuted)),
+              Text("Gerbariy Bo'limi", style: Theme.of(context).textTheme.displaySmall),
+              Text("Videolar va mening kolleksiyam", style: GoogleFonts.nunito(fontSize: 12, color: c.textMuted)),
             ]),
             actions: [
               Container(
@@ -191,8 +190,8 @@ class _ArtsHerbariumScreenState extends State<ArtsHerbariumScreen>
               labelStyle:
                   GoogleFonts.sora(fontSize: 12, fontWeight: FontWeight.w700),
               tabs: [
-                const Tab(text: "🎬 Videolar"),
-                Tab(text: "🌿 Mening gerbariym (${_photos.length})"),
+                const Tab(text: "Videolar"),
+                Tab(text: "Kolleksiyam (${_photos.length})"),
               ],
             ),
           ),
@@ -229,64 +228,42 @@ class _ArtsHerbariumScreenState extends State<ArtsHerbariumScreen>
   }
 }
 
-// ─── Videos tab ───────────────────────────────────────────────
+// Videos Tab
 class _VideosTab extends StatelessWidget {
   const _VideosTab();
 
   static const List<Map<String, dynamic>> _videos = [
     {
-      'title': "Gerbariy yasash asoslari",
-      'desc': "O'simliklarni qanday yig'ish va qurish kerak — boshlang'ich qo'llanma",
-      'emoji': '🌿',
-      'duration': '8:24',
-      'channel': 'BotanikaTV',
-      'color': Color(0xFF16A34A),
-      'url': 'https://www.youtube.com/watch?v=gerbariy1',
-    },
-    {
-      'title': "Gul barglarini saqlash",
-      'desc': "Turli rangli gullarni presslab qurish va laminatlash usullari",
-      'emoji': '🌸',
-      'duration': '12:10',
-      'channel': 'FloraUzbekistan',
-      'color': Color(0xFFDB2777),
-      'url': 'https://www.youtube.com/watch?v=gerbariy2',
-    },
-    {
-      'title': "Gerbariy uchun qog'oz tanlash",
-      'desc': "Qanday maxsus qog'oz va materiallar kerak — professional maslahat",
-      'emoji': '📄',
-      'duration': '5:45',
-      'channel': 'HerbariumPro',
+      'title': "Gerbariy tayyorlash",
+      'icon': Icons.assignment_rounded,
+      'duration': '0:58',
+      'channel': 'Ilmnihol',
       'color': Color(0xFFF59E0B),
-      'url': 'https://www.youtube.com/watch?v=gerbariy3',
+      'url': 'https://youtube.com/shorts/96UAaf0NsSE',
     },
     {
-      'title': "O'simliklarni identifikatsiya qilish",
-      'desc': "Yig'ilgan o'simlikni nomi va turini aniqlash usullari",
-      'emoji': '🔍',
-      'duration': '15:30',
+      'title': "Gerbariy tayyorlash",
+      'icon': Icons.eco_rounded,
+      'duration': '0:56',
+      'channel': 'Ilmnihol',
+      'color': Color(0xFF16A34A),
+      'url': 'https://youtube.com/shorts/vqD5OBIXJAo',
+    },
+    {
+      'title': "Gerbariy tayyorlash",
+      'icon': Icons.auto_awesome_rounded,
+      'duration': '0:45',
       'channel': 'BotanikaTV',
       'color': Color(0xFF7C3AED),
-      'url': 'https://www.youtube.com/watch?v=gerbariy4',
+      'url': 'https://youtube.com/shorts/BlBvibGYvuE',
     },
     {
-      'title': "Gerbariy albom yaratish",
-      'desc': "Chiroyli gerbariy albom tuzish va bezash bo'yicha ijodiy g'oyalar",
-      'emoji': '📚',
-      'duration': '18:02',
-      'channel': 'NatureArt',
-      'color': Color(0xFFEA580C),
-      'url': 'https://www.youtube.com/watch?v=gerbariy5',
-    },
-    {
-      'title': "Daraxt barglaridan gerbariy",
-      'desc': "Kuz barglari bilan ishlash: maxsus usul va muhofaza qilish",
-      'emoji': '🍂',
-      'duration': '10:18',
-      'channel': 'FloraUzbekistan',
-      'color': Color(0xFF92400E),
-      'url': 'https://www.youtube.com/watch?v=gerbariy6',
+      'title': "Gerbariy tayyorlash",
+      'icon': Icons.book_rounded,
+      'duration': '12:15',
+      'channel': 'Ilmnihol',
+      'color': Color(0xFFDB2777),
+      'url': 'https://youtu.be/FXsIaYxGU3M',
     },
   ];
 
@@ -337,7 +314,7 @@ class _VideosTab extends StatelessWidget {
                 ),
               ]),
             ),
-            const Text('🎨', style: TextStyle(fontSize: 56)),
+            const Icon(Icons.palette_rounded, color: Colors.white, size: 56),
           ]),
         ),
         const SizedBox(height: 20),
@@ -366,11 +343,15 @@ class _VideoCard extends StatelessWidget {
     final c = context.colors;
     final color = video['color'] as Color;
     return GestureDetector(
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("YouTube: ${video['url']}"),
-          action: SnackBarAction(label: 'OK', onPressed: () {}),
-        ));
+      onTap: () async {
+        final uri = Uri.parse(video['url']!);
+        if (await canLaunchUrl(uri)) {
+          launchUrl(uri, mode: LaunchMode.externalApplication);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text("Videoni ochib bo'lmadi: ${video['url']}"),
+          ));
+        }
       },
       child: Container(
         decoration: BoxDecoration(
@@ -400,8 +381,7 @@ class _VideoCard extends StatelessWidget {
                   const BorderRadius.horizontal(left: Radius.circular(18)),
             ),
             child: Stack(alignment: Alignment.center, children: [
-              Text(video['emoji'] as String,
-                  style: const TextStyle(fontSize: 34)),
+              Icon(video['icon'] as IconData, color: Colors.white, size: 34),
               Positioned(
                 bottom: 6,
                 right: 6,
@@ -483,7 +463,7 @@ class _VideoCard extends StatelessWidget {
   }
 }
 
-// ─── My herbarium tab ─────────────────────────────────────
+// My Herbarium Tab
 class _MyHerbariumTab extends StatelessWidget {
   final List<_HerbariumPhoto> photos;
   final VoidCallback onAdd;
@@ -509,7 +489,7 @@ class _MyHerbariumTab extends StatelessWidget {
                     color: const Color(0xFFDB2777).withValues(alpha: 0.2)),
               ),
               child: const Center(
-                  child: Text('🌿', style: TextStyle(fontSize: 48))),
+                  child: Icon(Icons.eco_rounded, color: Color(0xFFDB2777), size: 48)),
             ),
             const SizedBox(height: 20),
             Text("Hali gerbariy yo'q",
@@ -645,7 +625,7 @@ class _PhotoCard extends StatelessWidget {
                 height: 140,
                 color: const Color(0xFFDB2777).withValues(alpha: 0.1),
                 child: const Center(
-                    child: Text('🌿', style: TextStyle(fontSize: 48))),
+                    child: Icon(Icons.eco_rounded, color: Color(0xFFDB2777), size: 48)),
               ),
             ),
             Positioned(
@@ -707,7 +687,7 @@ class _PhotoCard extends StatelessWidget {
   }
 }
 
-// ─── Add Photo Sheet ──────────────────────────────────────
+// Add Photo Sheet
 class _AddPhotoSheet extends StatefulWidget {
   final Uint8List imageBytes;
   final TextEditingController controller;
@@ -762,7 +742,7 @@ class _AddPhotoSheetState extends State<_AddPhotoSheet> {
                   height: 160,
                   color: const Color(0xFFDB2777).withValues(alpha: 0.1),
                   child: const Center(
-                      child: Text('🌿', style: TextStyle(fontSize: 48))),
+                      child: Icon(Icons.eco_rounded, color: Color(0xFFDB2777), size: 48)),
                 ),
               ),
             ),

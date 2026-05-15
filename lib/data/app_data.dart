@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/models.dart';
 
 class AppData {
-  // ============================================================
-  // LESSONS DATA
-  // ============================================================
+  // Lessons Data
   static List<LessonModel> get lessons => [
     LessonModel(
       id: 'lesson_01',
@@ -15,7 +13,7 @@ class AppData {
       steamColor: const Color(0xFF2D6A4F),
       difficulty: 'Oson',
       maxScore: 100,
-      youtubeUrl: 'https://www.youtube.com/watch?v=URUJD5NEXC8',
+      youtubeUrl: 'https://youtu.be/4-hwMov6INs',
       description: '''O'simlik hujayra — barcha tirik organizmlarning asosiy qurilish birligidir. 
       
 Hujayraning asosiy qismlari:
@@ -87,7 +85,7 @@ Hujayra o'lchami odatda 10-100 mikrometr bo'ladi.''',
       steamColor: const Color(0xFF2D6A4F),
       difficulty: 'O\'rta',
       maxScore: 100,
-      youtubeUrl: 'https://www.youtube.com/watch?v=g78utcLQrJ4',
+      youtubeUrl: 'https://youtu.be/CU3-U03A1CI',
       description: '''Fotosintez — o\'simliklarning quyosh energiyasidan foydalanib, karbonat angidrid va suvdan organik moddalar va kislorod hosil qilish jarayoni.
 
 **Kimyoviy tenglama:**
@@ -165,7 +163,7 @@ Hujayra o'lchami odatda 10-100 mikrometr bo'ladi.''',
       steamColor: const Color(0xFF2D6A4F),
       difficulty: 'Oson',
       maxScore: 100,
-      youtubeUrl: 'https://www.youtube.com/watch?v=YROTAZq6OG8',
+      youtubeUrl: 'https://youtu.be/RtF1gd3IDLY',
       description: '''Ildiz — o\'simliklarning yer ostidagi asosiy organi bo\'lib, bir nechta muhim vazifalarni bajaradi.
 
 **Ildizning vazifalari:**

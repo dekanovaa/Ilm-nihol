@@ -20,19 +20,32 @@ class _SplashState extends State<SplashScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _ctrl.forward();
-    Future.delayed(const Duration(milliseconds: 2300), () {
-      if (!mounted) return;
-      final p = context.read<AppProvider>();
-      if (p.isLoggedIn) {
-        if (p.hasPin) {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const PinLockScreen()));
-        } else {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const PinSetupScreen()));
-        }
+    _checkAuth();
+  }
+
+  Future<void> _checkAuth() async {
+    // Kamida 1.5 soniya splashni ko'rsatamiz
+    await Future.delayed(const Duration(milliseconds: 1500));
+    
+    if (!mounted) return;
+    final p = context.read<AppProvider>();
+    
+    // Agar hali init bo'lmagan bo'lsa, kutib turamiz
+    while (!p.isInitialized) {
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+
+    if (!mounted) return;
+    
+    if (p.isLoggedIn) {
+      if (p.hasPin) {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const PinLockScreen()));
       } else {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const PinSetupScreen()));
       }
-    });
+    } else {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+    }
   }
   @override
   void dispose() { _ctrl.dispose(); super.dispose(); }

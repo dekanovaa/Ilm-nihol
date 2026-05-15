@@ -12,8 +12,9 @@ class AppProvider extends ChangeNotifier {
   StreamSubscription<List<LeaderboardEntry>>? _leaderboardSub;
   String? _localPin;
   bool _pinVerified = false;
+  bool _initialized = false;
 
-  ThemeMode _themeMode = ThemeMode.system;
+  ThemeMode _themeMode = ThemeMode.light;
 
   UserModel? get currentUser => _currentUser;
   bool get isLoggedIn => _isLoggedIn;
@@ -21,6 +22,7 @@ class AppProvider extends ChangeNotifier {
   ThemeMode get themeMode => _themeMode;
   bool get hasPin => _localPin != null && _localPin!.isNotEmpty;
   bool get isPinVerified => _pinVerified;
+  bool get isInitialized => _initialized;
 
   AppProvider() {
     _init();
@@ -43,8 +45,7 @@ class AppProvider extends ChangeNotifier {
             _currentUser = user;
             _isLoggedIn = true;
             await _loadLocalPin();
-            _subscribeLeaderboard(); // Faqat login qilgandan keyin
-            notifyListeners();
+            _subscribeLeaderboard();
           }
         } catch (e) {
           debugPrint('User load error: $e');
@@ -58,8 +59,9 @@ class AppProvider extends ChangeNotifier {
         _leaderboard = [];
         _leaderboardSub?.cancel();
         _leaderboardSub = null;
-        notifyListeners();
       }
+      _initialized = true;
+      notifyListeners();
     });
   }
 

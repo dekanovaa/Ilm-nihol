@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
@@ -9,9 +10,7 @@ import '../data/app_data.dart';
 import '../models/models.dart';
 import 'quiz_screen.dart';
 
-// ════════════════════════════════════════════════════════════
-// LESSONS LIST SCREEN
-// ════════════════════════════════════════════════════════════
+// Lessons List Screen
 class LessonsScreen extends StatefulWidget {
   const LessonsScreen({super.key});
   @override
@@ -335,9 +334,7 @@ class _Tag extends StatelessWidget {
   );
 }
 
-// ════════════════════════════════════════════════════════════
-// LESSON DETAIL SCREEN
-// ════════════════════════════════════════════════════════════
+// Lesson Detail Screen
 class LessonDetailScreen extends StatefulWidget {
   final LessonModel lesson;
   const LessonDetailScreen({super.key, required this.lesson});
@@ -582,8 +579,17 @@ class _VideoTab extends StatelessWidget {
     );
   }
 
-  void _launch(BuildContext ctx) {
-    ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text('YouTube: ${lesson.youtubeUrl}'), action: SnackBarAction(label: 'OK', onPressed: () {})));
+  Future<void> _launch(BuildContext ctx) async {
+    final uri = Uri.parse(lesson.youtubeUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (ctx.mounted) {
+        ScaffoldMessenger.of(ctx).showSnackBar(
+          SnackBar(content: Text('Havolani ochib bo\'lmadi: ${lesson.youtubeUrl}')),
+        );
+      }
+    }
   }
 }
 
@@ -709,9 +715,7 @@ class _InfoBadge extends StatelessWidget {
 }
 
 
-// ════════════════════════════════════════════════════════════
-// LESSON FORMULAS TAB — mavzuga mos formulalar + kalkulyator
-// ════════════════════════════════════════════════════════════
+// Formulas Tab
 class _LessonFormulasTab extends StatefulWidget {
   final LessonModel lesson;
   const _LessonFormulasTab({required this.lesson});

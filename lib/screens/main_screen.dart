@@ -5,7 +5,7 @@ import '../theme/app_theme.dart';
 import 'home_screen.dart';
 import 'lessons_screen.dart';
 import 'leaderboard_screen.dart';
-import 'labs_screen.dart';
+import 'engineering_lab_screen.dart';
 import 'profile_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -18,7 +18,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   int _idx = 0;
   late List<AnimationController> _ctrls;
 
-  final _screens = [HomeScreen(), LessonsScreen(), LabsScreen(), LeaderboardScreen(), ProfileScreen()];
+  final _screens = [HomeScreen(), LessonsScreen(), const EngineeringLabScreen(), LeaderboardScreen(), ProfileScreen()];
 
   @override
   void initState() {
@@ -129,4 +129,4 @@ class _NavItem extends StatelessWidget {
   }
 }
 
-// Nav icons removed — now using IconData directly in _NavItem
+

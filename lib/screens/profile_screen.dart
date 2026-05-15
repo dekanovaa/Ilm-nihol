@@ -232,9 +232,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 }
 
 
-// ════════════════════════════════════════════════════════════
-// PROFILE HELPER WIDGETS
-// ════════════════════════════════════════════════════════════
+// Profile Helper Widgets
 class _Label2 extends StatelessWidget {
   final String t;
   const _Label2(this.t);

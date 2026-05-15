@@ -211,8 +211,8 @@ class _QuizScreenState extends State<QuizScreen> with TickerProviderStateMixin {
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: const Center(
-                                    child: Text('🖼️',
-                                        style: TextStyle(fontSize: 48))),
+                                    child: Icon(Icons.image_not_supported_rounded,
+                                        size: 48, color: Colors.grey)),
                               ),
                             ),
                           ),
@@ -264,8 +264,8 @@ class _QuizScreenState extends State<QuizScreen> with TickerProviderStateMixin {
                               child: Text(
                                   _currentIndex <
                                           widget.lesson.questions.length - 1
-                                      ? 'Keyingi savol →'
-                                      : 'Natijani ko\'rish 🏆',
+                                      ? 'Keyingi savol'
+                                      : 'Natijani ko\'rish',
                                   style: GoogleFonts.nunito(
                                       fontWeight: FontWeight.w700)),
                             ),
@@ -353,19 +353,20 @@ class _QuestionTypeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String icon, label;
+    IconData icon;
+    String label;
     Color color;
     switch (type) {
       case QuestionType.multipleChoice:
-        icon = '🔘';
+        icon = Icons.radio_button_checked_rounded;
         label = 'Ko\'p tanlovli';
         color = context.colors.primary;
       case QuestionType.trueFalse:
-        icon = '✅';
+        icon = Icons.check_circle_outline_rounded;
         label = 'To\'g\'ri/Noto\'g\'ri';
         color = context.colors.accentOrange;
       case QuestionType.imageChoice:
-        icon = '🖼️';
+        icon = Icons.image_rounded;
         label = 'Rasmli savol';
         color = context.colors.accentPink;
     }
@@ -377,9 +378,11 @@ class _QuestionTypeBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
-      child: Text('$icon $label',
-          style: GoogleFonts.sora(
-              fontSize: 10, fontWeight: FontWeight.w700, color: color)),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Icon(icon as IconData, color: color, size: 14),
+        const SizedBox(width: 6),
+        Text(label, style: GoogleFonts.sora(fontSize: 10, fontWeight: FontWeight.w700, color: color)),
+      ]),
     );
   }
 }
@@ -499,7 +502,8 @@ class _ExplanationCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(isCorrect ? '🎉' : '📖', style: const TextStyle(fontSize: 20)),
+          Icon(isCorrect ? Icons.check_circle_rounded : Icons.info_outline_rounded,
+              color: color, size: 24),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -525,9 +529,7 @@ class _ExplanationCard extends StatelessWidget {
   }
 }
 
-// ============================================================
-// RESULT SCREEN
-// ============================================================
+// Result Screen
 class _ResultScreen extends StatelessWidget {
   final LessonModel lesson;
   final int score;
@@ -566,13 +568,14 @@ class _ResultScreen extends StatelessWidget {
           child: Column(
             children: [
               const SizedBox(height: 20),
-              Text(
-                  isGood
-                      ? '🏆'
-                      : score >= 60
-                          ? '👍'
-                          : '💪',
-                  style: const TextStyle(fontSize: 80)),
+                  Icon(
+                    isGood
+                        ? Icons.emoji_events
+                        : score >= 60
+                            ? Icons.thumb_up
+                            : Icons.fitness_center,
+                    size: 80, color: isGood ? context.colors.gold : context.colors.primary,
+                  ),
               const SizedBox(height: 16),
               Text(
                   isGood
@@ -642,13 +645,13 @@ class _ResultScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _StatItem(
-                        icon: '✅', value: '$_correct', label: 'To\'g\'ri'),
+                        icon: Icons.check_circle_rounded, color: context.colors.successGreen, value: '$_correct', label: 'To\'g\'ri'),
                     _StatItem(
-                        icon: '❌',
+                        icon: Icons.cancel_rounded, color: context.colors.errorRed,
                         value: '${lesson.questions.length - _correct}',
                         label: 'Noto\'g\'ri'),
                     _StatItem(
-                        icon: '📊',
+                        icon: Icons.bar_chart_rounded, color: context.colors.primary,
                         value: '${lesson.questions.length}',
                         label: 'Jami'),
                   ],
@@ -667,7 +670,7 @@ class _ResultScreen extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      const Text('🎓', style: TextStyle(fontSize: 32)),
+                      Icon(Icons.workspace_premium, color: Colors.white, size: 40),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -719,14 +722,16 @@ class _ResultScreen extends StatelessWidget {
 }
 
 class _StatItem extends StatelessWidget {
-  final String icon, value, label;
+  final IconData icon;
+  final Color color;
+  final String value, label;
   const _StatItem(
-      {required this.icon, required this.value, required this.label});
+      {required this.icon, required this.color, required this.value, required this.label});
   @override
   Widget build(BuildContext context) => Column(
         children: [
-          Text(icon, style: const TextStyle(fontSize: 24)),
-          const SizedBox(height: 4),
+          Icon(icon, color: color, size: 28),
+          const SizedBox(height: 6),
           Text(value,
               style: GoogleFonts.sora(
                   fontSize: 20,
