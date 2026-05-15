@@ -379,7 +379,7 @@ class _QuestionTypeBadge extends StatelessWidget {
         border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Icon(icon as IconData, color: color, size: 14),
+        Icon(icon, color: color, size: 14),
         const SizedBox(width: 6),
         Text(label, style: GoogleFonts.sora(fontSize: 10, fontWeight: FontWeight.w700, color: color)),
       ]),

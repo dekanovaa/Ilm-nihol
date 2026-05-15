@@ -166,7 +166,6 @@ class _GreetingCard extends StatelessWidget {
 class _GameSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(

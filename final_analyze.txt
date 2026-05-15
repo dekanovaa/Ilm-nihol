@@ -1,6 +1,0 @@
-Analyzing lib...                                                
-
-  error - The named parameter 'showDrawerHamburger' isn't defined - lib\screens\profile_screen.dart:107:13 - undefined_named_parameter
-warning - The value of the local variable 'c' isn't used - lib\screens\profile_screen.dart:601:11 - unused_local_variable
-  error - Invalid constant value - lib\screens\profile_screen.dart:706:526 - invalid_constant
-

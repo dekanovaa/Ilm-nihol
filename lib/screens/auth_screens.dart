@@ -176,7 +176,7 @@ class _LoginState extends State<LoginScreen> {
   final _fk = GlobalKey<FormState>();
   final _ec = TextEditingController();
   final _pc = TextEditingController();
-  bool _hide = true, _loading = false;
+  bool _loading = false;
 
   Future<void> _login() async {
     if (!_fk.currentState!.validate()) return;

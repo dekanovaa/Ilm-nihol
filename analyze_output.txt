@@ -1,6 +1,0 @@
-Analyzing lib...                                                
-
-  error - Target of URI doesn't exist: 'profile_screen.dart' - lib\screens\main_screen.dart:8:8 - uri_does_not_exist
-  error - The method 'ProfileScreen' isn't defined for the type '_MainScreenState' - lib\screens\main_screen.dart:20:79 - undefined_method
-  error - The values in a const list literal must be constants - lib\screens\main_screen.dart:20:79 - non_constant_list_element
-

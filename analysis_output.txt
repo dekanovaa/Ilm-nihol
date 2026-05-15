@@ -1,9 +1,0 @@
-Analyzing Ilm-nihol...                                          
-
-warning - Dead code - lib\screens\community_screen.dart:175:27 - dead_code
-warning - Unused import: 'dart:typed_data' - lib\screens\profile_screen.dart:1:8 - unused_import
-warning - Unused import: 'package:image_picker/image_picker.dart' - lib\screens\profile_screen.dart:4:8 - unused_import
-warning - Unused import: '../services/firebase_service.dart' - lib\screens\profile_screen.dart:11:8 - unused_import
-warning - Unused import: 'dart:io' - lib\services\firebase_service.dart:5:8 - unused_import
-
-5 issues found. (ran in 1.3s)
