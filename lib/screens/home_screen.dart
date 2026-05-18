@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_theme.dart';
 import '../models/app_provider.dart';
+import 'botany_game_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -197,107 +198,13 @@ class _GameSection extends StatelessWidget {
   }
 
   void _showGame(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const _FlashcardGameSheet(),
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const BotanyGameScreen()),
     );
   }
 }
 
-class _FlashcardGameSheet extends StatefulWidget {
-  const _FlashcardGameSheet();
-  @override
-  State<_FlashcardGameSheet> createState() => _FlashcardGameSheetState();
-}
-
-class _FlashcardGameSheetState extends State<_FlashcardGameSheet> {
-  int _idx = 0;
-  int _score = 0;
-  bool _finished = false;
-
-  final _questions = [
-    {'q': 'Fotosintez jarayoni uchun nima zarur?', 'a': 'Quyosh nuri', 'o': ['Quyosh nuri', 'Tuz', 'Yog\'och']},
-    {'q': 'O\'simlikning qaysi qismi suvni shimadi?', 'a': 'Ildiz', 'o': ['Barg', 'Ildiz', 'Gultoj']},
-    {'q': 'Daraxtlarning yoshini qayerdan bilsa bo\'ladi?', 'a': 'Yillik halqalardan', 'o': ['Balandligidan', 'Yillik halqalardan', 'Barglaridan']},
-    {'q': 'Eng tez o\'sadigan o\'simlik?', 'a': 'Bambuk', 'o': ['Eman', 'Bambuk', 'Atirgul']},
-  ];
-
-  void _answer(String val) {
-    if (val == _questions[_idx]['a']) _score += 10;
-    if (_idx < _questions.length - 1) {
-      setState(() => _idx++);
-    } else {
-      setState(() => _finished = true);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.7,
-      decoration: BoxDecoration(color: c.surface, borderRadius: const BorderRadius.vertical(top: Radius.circular(32))),
-      padding: const EdgeInsets.all(24),
-      child: _finished ? _resultView() : _gameView(),
-    );
-  }
-
-  Widget _gameView() {
-    final q = _questions[_idx];
-    final options = q['o'] as List<String>;
-    return Column(children: [
-      Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
-      const SizedBox(height: 30),
-      Text("Savol ${_idx + 1}/${_questions.length}", style: GoogleFonts.sora(fontWeight: FontWeight.w700, color: context.colors.primary)),
-      const SizedBox(height: 20),
-      Expanded(
-        child: Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: context.colors.primary.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: context.colors.primary.withValues(alpha: 0.1)),
-          ),
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.quiz, color: context.colors.primary, size: 48),
-              const SizedBox(height: 16),
-              Text(q['q'] as String, style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w800), textAlign: TextAlign.center),
-            ],
-          ),
-        ),
-      ),
-      const SizedBox(height: 30),
-      ...options.map((opt) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: SizedBox(
-          width: double.infinity, height: 54,
-          child: ElevatedButton(
-            onPressed: () => _answer(opt),
-            style: ElevatedButton.styleFrom(backgroundColor: context.colors.background, foregroundColor: context.colors.textPrimary, elevation: 0, side: BorderSide(color: context.colors.cardBorder)),
-            child: Text(opt, style: GoogleFonts.nunito(fontWeight: FontWeight.w700, fontSize: 15)),
-          ),
-        ),
-      )),
-    ]);
-  }
-
-  Widget _resultView() {
-    return Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      const Icon(Icons.emoji_events, color: Colors.orange, size: 80),
-      const SizedBox(height: 20),
-      Text("O'yin yakunlandi!", style: GoogleFonts.sora(fontSize: 22, fontWeight: FontWeight.w800)),
-      const SizedBox(height: 10),
-      Text("Siz to'plagan ball: $_score", style: GoogleFonts.sora(fontSize: 18, color: context.colors.primary, fontWeight: FontWeight.w700)),
-      const SizedBox(height: 40),
-      SizedBox(width: double.infinity, height: 55, child: ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text("Yopish"))),
-    ]);
-  }
-}
 
 class _QuickStats extends StatelessWidget {
   final dynamic user;
